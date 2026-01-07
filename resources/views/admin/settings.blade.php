@@ -61,21 +61,36 @@
                 </div>
 
                 <!-- Location -->
-                <div class="mb-6">
-                    <label for="location" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <div class="mb-6" x-data="locationPicker()">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         <svg class="inline h-5 w-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
                         </svg>
                         Business Location
                     </label>
-                    <textarea id="location" name="location" rows="3"
-                              placeholder="123 Main Street&#10;City, State 12345&#10;Country"
+                    
+                    <div class="mb-3">
+                        <div id="map" class="h-64 rounded-lg border border-gray-300 dark:border-gray-600 mb-2"></div>
+                        <button @click="getCurrentLocation()" type="button"
+                                class="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 flex items-center">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                            </svg>
+                            Use my current location
+                        </button>
+                    </div>
+                    
+                    <input type="hidden" id="latitude" name="latitude" x-model="latitude">
+                    <input type="hidden" id="longitude" name="longitude" x-model="longitude">
+                    
+                    <textarea id="location" name="location" rows="3" x-model="address"
+                              placeholder="123 Main Street, City, State 12345, Country"
                               class="w-full px-4 py-2 border {{ $errors->has('location') ? 'border-red-500' : 'border-gray-300 dark:border-gray-600' }} rounded-lg focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white">{{ old('location', $settings->location ?? '') }}</textarea>
                     @error('location')
                         <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                     @enderror
-                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Physical business address</p>
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Click on the map to select your business location</p>
                 </div>
 
                 <!-- About Us -->
@@ -185,11 +200,11 @@
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
             <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">Quick Actions</h3>
             <div class="space-y-3">
-                <a href="{{ route('buyer.home') }}" target="_blank"
+                <a href="{{ route('home') }}" target="_blank"
                    class="block w-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-semibold py-2 px-4 rounded-lg transition duration-200 text-center">
                     View Website
                 </a>
-                <a href="{{ route('buyer.faq.index') }}" target="_blank"
+                <a href="{{ route('faq.index') }}" target="_blank"
                    class="block w-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-semibold py-2 px-4 rounded-lg transition duration-200 text-center">
                     Manage FAQs
                 </a>
@@ -198,3 +213,85 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+document.addEventListener('alpine:init', () => {
+    Alpine.data('locationPicker', () => ({
+        latitude: {{ $settings->latitude ?? 27.7172 }},
+        longitude: {{ $settings->longitude ?? 85.3240 }},
+        address: '',
+        map: null,
+        marker: null,
+        
+        init() {
+            setTimeout(() => {
+                this.initMap();
+            }, 100);
+        },
+        
+        initMap() {
+            if (typeof L === 'undefined') {
+                console.error('Leaflet not loaded');
+                return;
+            }
+            
+            this.map = L.map('map').setView([this.latitude, this.longitude], 13);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(this.map);
+            
+            this.marker = L.marker([this.latitude, this.longitude], {
+                draggable: true
+            }).addTo(this.map);
+            
+            this.map.on('click', (e) => {
+                this.updateLocation(e.latlng.lat, e.latlng.lng);
+            });
+            
+            this.marker.on('dragend', (e) => {
+                const pos = e.target.getLatLng();
+                this.updateLocation(pos.lat, pos.lng);
+            });
+        },
+        
+        updateLocation(lat, lng) {
+            this.latitude = lat.toFixed(6);
+            this.longitude = lng.toFixed(6);
+            this.marker.setLatLng([lat, lng]);
+            this.getAddress(lat, lng);
+        },
+        
+        async getAddress(lat, lng) {
+            try {
+                const response = await fetch(\`https://nominatim.openstreetmap.org/reverse?format=json&lat=\${lat}&lon=\${lng}\`);
+                const data = await response.json();
+                if (data.display_name) {
+                    this.address = data.display_name;
+                }
+            } catch (error) {
+                console.error('Error fetching address:', error);
+            }
+        },
+        
+        getCurrentLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition((position) => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    this.map.setView([lat, lng], 15);
+                    this.updateLocation(lat, lng);
+                }, (error) => {
+                    alert('Unable to get your location: ' + error.message);
+                });
+            } else {
+                alert('Geolocation is not supported by your browser');
+            }
+        }
+    }));
+});
+</script>
+@endpush

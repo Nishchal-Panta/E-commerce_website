@@ -13,6 +13,8 @@ class Setting extends Model
         'phone_number',
         'admin_email',
         'location',
+        'latitude',
+        'longitude',
         'about_us',
     ];
 

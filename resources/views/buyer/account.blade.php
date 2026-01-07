@@ -20,22 +20,28 @@
 
                 <form action="{{ route('buyer.account.update') }}" method="POST" enctype="multipart/form-data">
                     @csrf
-                    @method('PATCH')
+                    @method('PUT')
 
                     <!-- Profile Photo -->
-                    <div class="mb-6" x-data="{ photoPreview: '{{ auth()->user()->profile_photo ? asset('storage/' . auth()->user()->profile_photo) : '' }}' }">
+                    <div class="mb-6" x-data="{ photoPreview: '{{ auth()->user()->profile_photo ? asset('storage/' . auth()->user()->profile_photo) : '' }}', showModal: false }">
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Profile Photo</label>
                         <div class="flex items-center gap-6">
-                            <div class="relative">
+                            <div class="relative cursor-pointer group" @click="if(photoPreview || '{{ auth()->user()->profile_photo }}') showModal = true">
                                 @if(auth()->user()->profile_photo)
                                     <img :src="photoPreview || '{{ asset('storage/' . auth()->user()->profile_photo) }}'" 
                                          alt="Profile" 
-                                         class="w-24 h-24 rounded-full object-cover">
+                                         class="w-24 h-24 rounded-full object-cover border-4 border-gray-200 dark:border-gray-700 group-hover:border-indigo-500 transition">
+                                    <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 rounded-full flex items-center justify-center transition">
+                                        <i class="fas fa-search text-white opacity-0 group-hover:opacity-100 transition"></i>
+                                    </div>
                                 @else
                                     <img x-show="photoPreview" :src="photoPreview" 
                                          alt="Profile" 
-                                         class="w-24 h-24 rounded-full object-cover">
-                                    <div x-show="!photoPreview" class="w-24 h-24 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                                         class="w-24 h-24 rounded-full object-cover border-4 border-gray-200 dark:border-gray-700 group-hover:border-indigo-500 transition">
+                                    <div x-show="photoPreview" class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 rounded-full flex items-center justify-center transition">
+                                        <i class="fas fa-search text-white opacity-0 group-hover:opacity-100 transition"></i>
+                                    </div>
+                                    <div x-show="!photoPreview" class="w-24 h-24 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center border-4 border-gray-200 dark:border-gray-700">
                                         <svg class="h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                                         </svg>
@@ -57,6 +63,26 @@
                         @error('profile_photo')
                             <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                         @enderror
+                        
+                        <!-- Image Preview Modal -->
+                        <div x-show="showModal" 
+                             @click="showModal = false"
+                             class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-4"
+                             x-transition:enter="transition ease-out duration-300"
+                             x-transition:enter-start="opacity-0"
+                             x-transition:enter-end="opacity-100"
+                             x-transition:leave="transition ease-in duration-200"
+                             x-transition:leave-start="opacity-100"
+                             x-transition:leave-end="opacity-0">
+                            <div class="relative max-w-4xl max-h-full" @click.stop>
+                                <button @click="showModal = false" class="absolute -top-10 right-0 text-white hover:text-gray-300">
+                                    <i class="fas fa-times text-2xl"></i>
+                                </button>
+                                <img :src="photoPreview || '{{ auth()->user()->profile_photo ? asset('storage/' . auth()->user()->profile_photo) : '' }}'" 
+                                     alt="Profile Preview" 
+                                     class="max-w-full max-h-[90vh] rounded-lg shadow-2xl">
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Username -->
@@ -95,7 +121,7 @@
 
                 <form action="{{ route('buyer.account.password') }}" method="POST" x-data="{ showCurrent: false, showNew: false, showConfirm: false }">
                     @csrf
-                    @method('PATCH')
+                    @method('PUT')
 
                     <!-- Current Password -->
                     <div class="mb-6">
@@ -208,7 +234,7 @@
                        class="block w-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-white font-semibold py-3 px-4 rounded-lg transition duration-200 text-center">
                         View Cart
                     </a>
-                    <a href="{{ route('buyer.faq.index') }}" 
+                    <a href="{{ route('faq.index') }}" 
                        class="block w-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-white font-semibold py-3 px-4 rounded-lg transition duration-200 text-center">
                         Help & FAQs
                     </a>

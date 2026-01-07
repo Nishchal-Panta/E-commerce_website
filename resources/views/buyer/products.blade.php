@@ -11,7 +11,7 @@
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 sticky top-24">
                 <h2 class="text-xl font-bold text-gray-800 dark:text-white mb-6">Filters</h2>
                 
-                <form method="GET" action="{{ route('buyer.products.index') }}">
+                <form method="GET" action="{{ route('products.index') }}">
                     <!-- Search -->
                     <div class="mb-6">
                         <label for="search" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Search</label>
@@ -40,7 +40,7 @@
                     <!-- Brand -->
                     <div class="mb-6">
                         <label for="brand" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Brand</label>
-                        <input type="text" id="brand" name="brand" value="{{ request('brand') }}" 
+                        <input type="text" id="brand" name="brand" value="{{ is_array(request('brand')) ? implode(', ', request('brand')) : request('brand') }}" 
                                placeholder="Enter brand..." 
                                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white">
                     </div>
@@ -48,7 +48,7 @@
                     <!-- Color -->
                     <div class="mb-6">
                         <label for="color" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Color</label>
-                        <input type="text" id="color" name="color" value="{{ request('color') }}" 
+                        <input type="text" id="color" name="color" value="{{ is_array(request('color')) ? implode(', ', request('color')) : request('color') }}" 
                                placeholder="Enter color..." 
                                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white">
                     </div>
@@ -56,7 +56,7 @@
                     <!-- Size -->
                     <div class="mb-6">
                         <label for="size" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Size</label>
-                        <input type="text" id="size" name="size" value="{{ request('size') }}" 
+                        <input type="text" id="size" name="size" value="{{ is_array(request('size')) ? implode(', ', request('size')) : request('size') }}" 
                                placeholder="Enter size..." 
                                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white">
                     </div>
@@ -91,7 +91,7 @@
                         <button type="submit" class="flex-1 bg-primary-600 hover:bg-primary-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">
                             Apply Filters
                         </button>
-                        <a href="{{ route('buyer.products.index') }}" class="flex-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-semibold py-2 px-4 rounded-lg transition duration-200 text-center">
+                        <a href="{{ route('products.index') }}" class="flex-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-semibold py-2 px-4 rounded-lg transition duration-200 text-center">
                             Clear
                         </a>
                     </div>
@@ -123,44 +123,54 @@
                     </svg>
                     <h3 class="mt-4 text-xl font-medium text-gray-900 dark:text-white">No products found</h3>
                     <p class="mt-2 text-gray-500 dark:text-gray-400">Try adjusting your filters or search query</p>
-                    <a href="{{ route('buyer.products.index') }}" class="mt-6 inline-block bg-primary-600 hover:bg-primary-700 text-white font-semibold py-2 px-6 rounded-lg transition duration-200">
+                    <a href="{{ route('products.index') }}" class="mt-6 inline-block bg-primary-600 hover:bg-primary-700 text-white font-semibold py-2 px-6 rounded-lg transition duration-200">
                         View All Products
                     </a>
                 </div>
             @else
-                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6" x-data="{ showModal: false, modalImage: '', scale: 1 }">
                     @foreach($products as $product)
                         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-xl transition duration-300">
-                            <a href="{{ route('buyer.products.show', $product->id) }}">
-                                <div class="relative">
-                                    @if($product->primaryImage)
+                            <div class="relative group">
+                                @if($product->primaryImage)
+                                    <a href="{{ route('products.show', $product->id) }}" class="block relative">
                                         <img src="{{ asset('storage/' . $product->primaryImage->image_path) }}" 
                                              alt="{{ $product->name }}" 
                                              class="w-full h-64 object-cover">
-                                    @else
+                                        <!-- Zoom icon overlay -->
+                                        <button type="button"
+                                                @click.prevent="showModal = true; modalImage = '{{ asset('storage/' . $product->primaryImage->image_path) }}'; scale = 1"
+                                                class="absolute top-3 right-3 bg-white dark:bg-gray-800 bg-opacity-90 dark:bg-opacity-90 text-gray-700 dark:text-gray-300 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 hover:scale-110 transform">
+                                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"></path>
+                                            </svg>
+                                        </button>
+                                    </a>
+                                @else
+                                    <a href="{{ route('products.show', $product->id) }}">
                                         <div class="w-full h-64 bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
                                             <svg class="h-24 w-24 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                                             </svg>
                                         </div>
-                                    @endif
-                                    
-                                    @if($product->is_trending)
-                                        <span class="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full">
-                                            TRENDING
-                                        </span>
-                                    @endif
-                                    
-                                    @if($product->isLowStock())
-                                        <span class="absolute top-3 right-3 bg-yellow-500 text-white text-xs font-bold px-3 py-1 rounded-full">
-                                            LOW STOCK
-                                        </span>
-                                    @endif
-                                </div>
-                            </a>
+                                    </a>
+                                @endif
+                                
+                                @if($product->is_trending)
+                                    <span class="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+                                        TRENDING
+                                    </span>
+                                @endif
+                                
+                                @if($product->isLowStock())
+                                    <span class="absolute top-3 {{ $product->primaryImage ? 'right-16' : 'right-3' }} bg-yellow-500 text-white text-xs font-bold px-3 py-1 rounded-full group-hover:right-3 transition-all duration-200">
+                                        LOW STOCK
+                                    </span>
+                                @endif
+                            </div>
                             
                             <div class="p-5">
-                                <a href="{{ route('buyer.products.show', $product->id) }}" class="block">
+                                <a href="{{ route('products.show', $product->id) }}" class="block">
                                     <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-2 hover:text-primary-600 dark:hover:text-primary-400 transition duration-200">
                                         {{ $product->name }}
                                     </h3>
@@ -223,6 +233,57 @@
                             </div>
                         </div>
                     @endforeach
+
+                    <!-- Image Zoom Modal -->
+                    <div x-show="showModal" 
+                         x-cloak
+                         @click.self="showModal = false; scale = 1"
+                         class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90 p-4"
+                         style="display: none;">
+                        <div class="relative max-w-7xl max-h-screen w-full h-full flex flex-col items-center justify-center">
+                            <!-- Close Button -->
+                            <button @click="showModal = false; scale = 1" 
+                                    class="absolute top-4 right-4 text-white hover:text-gray-300 transition-colors z-10">
+                                <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+
+                            <!-- Zoom Controls -->
+                            <div class="absolute top-4 left-4 flex gap-2 z-10">
+                                <button @click="scale = Math.min(scale + 0.5, 5)" 
+                                        class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg transition-colors">
+                                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"></path>
+                                    </svg>
+                                </button>
+                                <button @click="scale = Math.max(scale - 0.5, 0.5)" 
+                                        class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg transition-colors">
+                                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7"></path>
+                                    </svg>
+                                </button>
+                                <button @click="scale = 1" 
+                                        class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg transition-colors">
+                                    Reset
+                                </button>
+                            </div>
+
+                            <!-- Zoom Level Indicator -->
+                            <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-white bg-opacity-20 text-white px-4 py-2 rounded-lg z-10">
+                                <span x-text="`${Math.round(scale * 100)}%`"></span>
+                            </div>
+
+                            <!-- Zoomable Image -->
+                            <div class="overflow-auto w-full h-full flex items-center justify-center">
+                                <img :src="modalImage" 
+                                     alt="Product Image" 
+                                     :style="`transform: scale(${scale}); transition: transform 0.2s ease;`"
+                                     class="max-w-none cursor-move select-none"
+                                     draggable="false">
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Pagination -->

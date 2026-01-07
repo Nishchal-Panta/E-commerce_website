@@ -74,7 +74,7 @@
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
                 <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-6">Order Items</h2>
                 <div class="space-y-4">
-                    @foreach($order->items as $item)
+                    @foreach($order->orderItems as $item)
                         <div class="flex items-center gap-4 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-0">
                             @if($item->product->primaryImage)
                                 <img src="{{ asset('storage/' . $item->product->primaryImage->image_path) }}" 
@@ -89,7 +89,7 @@
                             @endif
                             
                             <div class="flex-1">
-                                <a href="{{ route('buyer.products.show', $item->product->id) }}" 
+                                <a href="{{ route('products.show', $item->product->id) }}" 
                                    class="font-semibold text-gray-900 dark:text-white hover:text-primary-600 dark:hover:text-primary-400">
                                     {{ $item->product->name }}
                                 </a>
@@ -123,7 +123,7 @@
                 
                 <div class="space-y-3 mb-6">
                     @php
-                        $subtotal = $order->items->sum(function($item) {
+                        $subtotal = $order->orderItems->sum(function($item) {
                             return $item->getSubtotal();
                         });
                         $tax = $subtotal * 0.10;
@@ -151,15 +151,78 @@
                 </div>
 
                 @if($order->canBeCancelled())
-                    <form action="{{ route('buyer.orders.cancel', $order->id) }}" method="POST" 
-                          onsubmit="return confirm('Are you sure you want to cancel this order?')">
-                        @csrf
-                        @method('PATCH')
-                        <button type="submit" 
+                    <div x-data="{ showCancelForm: false, selectedReason: '', customReason: '' }">
+                        <button @click="showCancelForm = true" 
+                                x-show="!showCancelForm"
+                                type="button"
                                 class="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200">
                             Cancel Order
                         </button>
-                    </form>
+                        
+                        <form x-show="showCancelForm" 
+                              x-cloak
+                              action="{{ route('buyer.orders.cancel', $order->id) }}" 
+                              method="POST" 
+                              class="space-y-4"
+                              onsubmit="return confirm('Are you sure you want to cancel this order?')">
+                            @csrf
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                                    Reason for Cancellation <span class="text-red-600">*</span>
+                                </label>
+                                <div class="space-y-2">
+                                    <label class="flex items-start p-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+                                        <input type="radio" name="cancellation_reason" x-model="selectedReason" value="Changed my mind" required
+                                               class="mt-1 mr-3 text-red-600 focus:ring-red-500">
+                                        <span class="text-sm text-gray-700 dark:text-gray-300">Changed my mind</span>
+                                    </label>
+                                    <label class="flex items-start p-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+                                        <input type="radio" name="cancellation_reason" x-model="selectedReason" value="Found a better price elsewhere" required
+                                               class="mt-1 mr-3 text-red-600 focus:ring-red-500">
+                                        <span class="text-sm text-gray-700 dark:text-gray-300">Found a better price elsewhere</span>
+                                    </label>
+                                    <label class="flex items-start p-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+                                        <input type="radio" name="cancellation_reason" x-model="selectedReason" value="Ordered by mistake" required
+                                               class="mt-1 mr-3 text-red-600 focus:ring-red-500">
+                                        <span class="text-sm text-gray-700 dark:text-gray-300">Ordered by mistake</span>
+                                    </label>
+                                    <label class="flex items-start p-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+                                        <input type="radio" name="cancellation_reason" x-model="selectedReason" value="Delivery time too long" required
+                                               class="mt-1 mr-3 text-red-600 focus:ring-red-500">
+                                        <span class="text-sm text-gray-700 dark:text-gray-300">Delivery time too long</span>
+                                    </label>
+                                    <label class="flex items-start p-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+                                        <input type="radio" name="cancellation_reason" x-model="selectedReason" value="other" required
+                                               class="mt-1 mr-3 text-red-600 focus:ring-red-500">
+                                        <span class="text-sm text-gray-700 dark:text-gray-300">Other (please specify)</span>
+                                    </label>
+                                    <div x-show="selectedReason === 'other'" x-cloak class="mt-2">
+                                        <textarea x-model="customReason" 
+                                                  name="custom_reason" 
+                                                  rows="3" 
+                                                  :required="selectedReason === 'other'"
+                                                  maxlength="500"
+                                                  class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white"
+                                                  placeholder="Please explain your reason..."></textarea>
+                                    </div>
+                                </div>
+                                @error('cancellation_reason')
+                                    <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+                            <div class="flex gap-3">
+                                <button type="submit" 
+                                        class="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200">
+                                    Confirm Cancellation
+                                </button>
+                                <button @click="showCancelForm = false; selectedReason = ''; customReason = ''" 
+                                        type="button"
+                                        class="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-semibold py-3 px-4 rounded-lg transition duration-200">
+                                    Go Back
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 @endif
             </div>
 

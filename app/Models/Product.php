@@ -81,6 +81,12 @@ class Product extends Model
             ?? $this->images()->first();
     }
 
+    // Accessor for primary image
+    public function getPrimaryImageAttribute()
+    {
+        return $this->getPrimaryImage();
+    }
+
     public function getAverageRating(): float
     {
         return round($this->reviews()->avg('rating') ?? 0, 1);

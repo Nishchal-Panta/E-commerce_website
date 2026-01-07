@@ -110,7 +110,7 @@
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
             <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-6">Order Items</h2>
             <div class="space-y-4">
-                @foreach($order->items as $item)
+                @foreach($order->orderItems as $item)
                     <div class="flex items-center gap-4 pb-4 border-b border-gray-200 dark:border-gray-700 last:border-0">
                         @if($item->product->primaryImage)
                             <img src="{{ asset('storage/' . $item->product->primaryImage->image_path) }}" 
@@ -153,7 +153,7 @@
             
             <div class="space-y-3 mb-6">
                 @php
-                    $subtotal = $order->items->sum(function($item) {
+                    $subtotal = $order->orderItems->sum(function($item) {
                         return $item->getSubtotal();
                     });
                     $tax = $subtotal * 0.10;

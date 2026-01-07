@@ -16,6 +16,7 @@ class Order extends Model
         'shipping_address',
         'payment_status',
         'payment_method',
+        'cancellation_reason',
     ];
 
     protected function casts(): array

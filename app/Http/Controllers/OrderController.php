@@ -17,7 +17,7 @@ class OrderController extends Controller
             ->get();
 
         if ($cartItems->isEmpty()) {
-            return redirect()->route('cart.index')->with('error', 'Your cart is empty.');
+            return redirect()->route('buyer.cart.index')->with('error', 'Your cart is empty.');
         }
 
         $subtotal = $cartItems->sum(function ($item) {
@@ -41,7 +41,7 @@ class OrderController extends Controller
         $cartItems = Cart::where('buyer_id', auth()->id())->with('product')->get();
 
         if ($cartItems->isEmpty()) {
-            return redirect()->route('cart.index')->with('error', 'Your cart is empty.');
+            return redirect()->route('buyer.cart.index')->with('error', 'Your cart is empty.');
         }
 
         // Verify stock availability
@@ -89,7 +89,7 @@ class OrderController extends Controller
 
             DB::commit();
 
-            return redirect()->route('orders.show', $order->id)
+            return redirect()->route('buyer.orders.show', $order->id)
                 ->with('success', 'Order placed successfully!');
 
         } catch (\Exception $e) {
@@ -115,5 +115,47 @@ class OrderController extends Controller
             ->findOrFail($id);
 
         return view('buyer.order-detail', compact('order'));
+    }
+
+    public function cancel(Request $request, $id)
+    {
+        $request->validate([
+            'cancellation_reason' => 'required|string',
+            'custom_reason' => 'nullable|string|max:500',
+        ]);
+
+        $order = Order::where('buyer_id', auth()->id())->findOrFail($id);
+
+        if (!$order->canBeCancelled()) {
+            return back()->with('error', 'This order cannot be cancelled.');
+        }
+
+        // Use custom reason if "other" was selected, otherwise use predefined reason
+        $reason = $request->cancellation_reason === 'other' 
+            ? $request->custom_reason 
+            : $request->cancellation_reason;
+
+        DB::beginTransaction();
+
+        try {
+            // Restore inventory
+            foreach ($order->orderItems as $item) {
+                $item->product->incrementStock($item->quantity);
+            }
+
+            // Update order status
+            $order->update([
+                'status' => 'cancelled',
+                'cancellation_reason' => $reason,
+            ]);
+
+            DB::commit();
+
+            return back()->with('success', 'Order cancelled successfully.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Failed to cancel order. Please try again.');
+        }
     }
 }

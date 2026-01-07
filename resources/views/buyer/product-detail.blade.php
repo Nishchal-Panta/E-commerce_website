@@ -4,12 +4,35 @@
 
 @section('content')
 <div class="container mx-auto px-4 py-8">
+    <!-- Success/Error Messages -->
+    @if(session('success'))
+        <div class="mb-6 bg-green-100 dark:bg-green-900 border border-green-400 dark:border-green-700 text-green-700 dark:text-green-200 px-6 py-4 rounded-lg flex items-center justify-between">
+            <div class="flex items-center">
+                <svg class="h-6 w-6 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                </svg>
+                <span>{{ session('success') }}</span>
+            </div>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="mb-6 bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-200 px-6 py-4 rounded-lg flex items-center justify-between">
+            <div class="flex items-center">
+                <svg class="h-6 w-6 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                </svg>
+                <span>{{ session('error') }}</span>
+            </div>
+        </div>
+    @endif
+
     <!-- Breadcrumb -->
     <nav class="text-sm mb-6">
         <ol class="flex items-center space-x-2 text-gray-600 dark:text-gray-400">
-            <li><a href="{{ route('buyer.home') }}" class="hover:text-primary-600">Home</a></li>
+            <li><a href="{{ route('home') }}" class="hover:text-primary-600">Home</a></li>
             <li><span class="mx-2">/</span></li>
-            <li><a href="{{ route('buyer.products.index') }}" class="hover:text-primary-600">Products</a></li>
+            <li><a href="{{ route('products.index') }}" class="hover:text-primary-600">Products</a></li>
             <li><span class="mx-2">/</span></li>
             <li class="text-gray-900 dark:text-white font-medium">{{ $product->name }}</li>
         </ol>
@@ -17,9 +40,17 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
         <!-- Product Images -->
-        <div x-data="{ activeImage: '{{ $product->primaryImage ? asset('storage/' . $product->primaryImage->image_path) : '' }}' }">
-            <div class="mb-4">
-                <img :src="activeImage" alt="{{ $product->name }}" class="w-full h-96 object-cover rounded-lg shadow-lg">
+        <div x-data="imageZoom()" x-init="init()">
+            <div class="mb-4 relative group">
+                <img :src="activeImage" 
+                     alt="{{ $product->name }}" 
+                     @click="openModal()"
+                     class="w-full h-96 object-cover rounded-lg shadow-lg cursor-zoom-in transition-transform duration-200 hover:scale-105">
+                <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 rounded-lg transition-all duration-200 flex items-center justify-center pointer-events-none">
+                    <svg class="h-12 w-12 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"></path>
+                    </svg>
+                </div>
             </div>
             
             @if($product->images->count() > 1)
@@ -33,7 +64,165 @@
                     @endforeach
                 </div>
             @endif
+
+            <!-- Image Zoom Modal -->
+            <div x-show="showModal" 
+                 x-cloak
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0"
+                 x-transition:enter-end="opacity-100"
+                 x-transition:leave="transition ease-in duration-200"
+                 x-transition:leave-start="opacity-100"
+                 x-transition:leave-end="opacity-0"
+                 @click.self="closeModal()"
+                 @keydown.escape.window="closeModal()"
+                 class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-95">
+                <div class="relative w-full h-full flex flex-col">
+                    <!-- Top Controls Bar -->
+                    <div class="absolute top-0 left-0 right-0 bg-gradient-to-b from-black/50 to-transparent p-4 z-20 flex items-center justify-between">
+                        <!-- Zoom Controls -->
+                        <div class="flex items-center gap-2">
+                            <button @click="zoomOut()" 
+                                    class="bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white p-3 rounded-lg transition-all duration-200 hover:scale-105">
+                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7"></path>
+                                </svg>
+                            </button>
+                            
+                            <div class="bg-white/10 backdrop-blur-sm text-white px-4 py-2 rounded-lg min-w-[80px] text-center">
+                                <span x-text="`${Math.round(scale * 100)}%`" class="font-semibold"></span>
+                            </div>
+                            
+                            <button @click="zoomIn()" 
+                                    class="bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white p-3 rounded-lg transition-all duration-200 hover:scale-105">
+                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"></path>
+                                </svg>
+                            </button>
+                            
+                            <button @click="resetZoom()" 
+                                    class="bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white px-4 py-2 rounded-lg transition-all duration-200 hover:scale-105">
+                                <svg class="h-5 w-5 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                                </svg>
+                                Reset
+                            </button>
+                        </div>
+
+                        <!-- Close Button -->
+                        <button @click="closeModal()" 
+                                class="bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white p-3 rounded-lg transition-all duration-200 hover:scale-105">
+                            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Image Container -->
+                    <div class="flex-1 overflow-hidden flex items-center justify-center p-4"
+                         @mousedown="startDrag($event)"
+                         @mousemove="drag($event)"
+                         @mouseup="endDrag()"
+                         @mouseleave="endDrag()"
+                         @wheel="handleWheel($event)">
+                        <img :src="activeImage" 
+                             alt="{{ $product->name }}" 
+                             :style="`transform: translate(${translateX}px, ${translateY}px) scale(${scale}); transition: ${isDragging ? 'none' : 'transform 0.2s ease'};`"
+                             :class="scale > 1 ? 'cursor-grab' : 'cursor-zoom-in'"
+                             class="max-w-none max-h-none select-none"
+                             @click="scale === 1 ? zoomIn() : null"
+                             draggable="false">
+                    </div>
+
+                    <!-- Help Text -->
+                    <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/50 backdrop-blur-sm text-white px-4 py-2 rounded-lg text-sm z-20">
+                        <span class="opacity-75">💡 Use mouse wheel to zoom • Drag to pan • ESC to close</span>
+                    </div>
+                </div>
+            </div>
         </div>
+
+        <script>
+            function imageZoom() {
+                return {
+                    activeImage: '{{ $product->primaryImage ? asset('storage/' . $product->primaryImage->image_path) : '' }}',
+                    showModal: false,
+                    scale: 1,
+                    translateX: 0,
+                    translateY: 0,
+                    isDragging: false,
+                    startX: 0,
+                    startY: 0,
+                    
+                    init() {
+                        // Any initialization if needed
+                    },
+                    
+                    openModal() {
+                        this.showModal = true;
+                        this.scale = 1;
+                        this.translateX = 0;
+                        this.translateY = 0;
+                        document.body.style.overflow = 'hidden';
+                    },
+                    
+                    closeModal() {
+                        this.showModal = false;
+                        this.resetZoom();
+                        document.body.style.overflow = '';
+                    },
+                    
+                    zoomIn() {
+                        this.scale = Math.min(this.scale + 0.5, 5);
+                    },
+                    
+                    zoomOut() {
+                        this.scale = Math.max(this.scale - 0.5, 0.5);
+                        if (this.scale === 1) {
+                            this.translateX = 0;
+                            this.translateY = 0;
+                        }
+                    },
+                    
+                    resetZoom() {
+                        this.scale = 1;
+                        this.translateX = 0;
+                        this.translateY = 0;
+                    },
+                    
+                    handleWheel(event) {
+                        event.preventDefault();
+                        const delta = event.deltaY > 0 ? -0.1 : 0.1;
+                        this.scale = Math.min(Math.max(this.scale + delta, 0.5), 5);
+                        
+                        if (this.scale === 1) {
+                            this.translateX = 0;
+                            this.translateY = 0;
+                        }
+                    },
+                    
+                    startDrag(event) {
+                        if (this.scale > 1) {
+                            this.isDragging = true;
+                            this.startX = event.clientX - this.translateX;
+                            this.startY = event.clientY - this.translateY;
+                            event.target.style.cursor = 'grabbing';
+                        }
+                    },
+                    
+                    drag(event) {
+                        if (this.isDragging && this.scale > 1) {
+                            this.translateX = event.clientX - this.startX;
+                            this.translateY = event.clientY - this.startY;
+                        }
+                    },
+                    
+                    endDrag() {
+                        this.isDragging = false;
+                    }
+                };
+            }
+        </script>
 
         <!-- Product Details -->
         <div>
@@ -277,12 +466,141 @@
         <!-- Write Review (only if purchased) -->
         @auth
             @if(auth()->user()->hasPurchased($product->id) && !auth()->user()->reviews()->where('product_id', $product->id)->exists())
-                <div class="mt-8 bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Write a Review</h3>
-                    <a href="{{ route('buyer.reviews.create', ['product_id' => $product->id]) }}" 
-                       class="inline-block bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200">
-                        Write Your Review
-                    </a>
+                <div class="mt-8 bg-white dark:bg-gray-800 rounded-lg shadow-md p-6" x-data="{ showReviewForm: false, rating: 0 }">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white">Write a Review</h3>
+                        <button @click="showReviewForm = !showReviewForm" 
+                                type="button"
+                                class="bg-primary-600 hover:bg-primary-700 text-white font-semibold py-2 px-6 rounded-lg transition duration-200">
+                            <span x-show="!showReviewForm">Write Your Review</span>
+                            <span x-show="showReviewForm" x-cloak>Cancel</span>
+                        </button>
+                    </div>
+
+                    <div x-show="showReviewForm" 
+                         x-cloak
+                         x-transition:enter="transition ease-out duration-300"
+                         x-transition:enter-start="opacity-0 transform scale-95"
+                         x-transition:enter-end="opacity-100 transform scale-100">
+                        <form action="{{ route('buyer.reviews.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+                            @csrf
+                            <input type="hidden" name="product_id" value="{{ $product->id }}">
+
+                            <!-- Rating -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    Rating <span class="text-red-500">*</span>
+                                </label>
+                                <div class="flex items-center gap-2">
+                                    <template x-for="star in [1, 2, 3, 4, 5]" :key="star">
+                                        <button type="button"
+                                                @click="rating = star"
+                                                @mouseenter="$el.querySelector('svg').classList.add('scale-110')"
+                                                @mouseleave="$el.querySelector('svg').classList.remove('scale-110')"
+                                                class="focus:outline-none transition-transform">
+                                            <svg :class="star <= rating ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600'"
+                                                 class="h-8 w-8 fill-current transition-all duration-150"
+                                                 viewBox="0 0 20 20">
+                                                <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/>
+                                            </svg>
+                                        </button>
+                                    </template>
+                                    <span x-show="rating > 0" x-text="`(${rating} ${rating === 1 ? 'star' : 'stars'})`" 
+                                          class="ml-2 text-sm text-gray-600 dark:text-gray-400"></span>
+                                </div>
+                                <input type="hidden" name="rating" :value="rating" required>
+                                @error('rating')
+                                    <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <!-- Comment -->
+                            <div>
+                                <label for="comment" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    Your Review
+                                </label>
+                                <textarea id="comment" 
+                                          name="comment" 
+                                          rows="4"
+                                          placeholder="Share your experience with this product..."
+                                          class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white resize-none"></textarea>
+                                @error('comment')
+                                    <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <!-- Photos -->
+                            <div x-data="{ fileNames: [] }">
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    Add Photos (Optional)
+                                </label>
+                                <div class="flex items-center justify-center w-full">
+                                    <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
+                                        <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                                            <svg class="w-8 h-8 mb-2 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                            </svg>
+                                            <p class="mb-1 text-sm text-gray-500 dark:text-gray-400">
+                                                <span class="font-semibold">Click to upload</span> or drag and drop
+                                            </p>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400">PNG, JPG up to 2MB (Max 5 images)</p>
+                                        </div>
+                                        <input type="file" 
+                                               name="photos[]" 
+                                               multiple 
+                                               accept="image/jpeg,image/png,image/jpg"
+                                               @change="fileNames = Array.from($event.target.files).map(f => f.name)"
+                                               class="hidden" 
+                                               max="5">
+                                    </label>
+                                </div>
+                                <div x-show="fileNames.length > 0" class="mt-2" x-cloak>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Selected files:</p>
+                                    <ul class="text-sm text-gray-500 dark:text-gray-500 list-disc list-inside">
+                                        <template x-for="fileName in fileNames" :key="fileName">
+                                            <li x-text="fileName"></li>
+                                        </template>
+                                    </ul>
+                                </div>
+                                @error('photos.*')
+                                    <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <!-- Submit Button -->
+                            <div class="flex items-center justify-end gap-3">
+                                <button type="button" 
+                                        @click="showReviewForm = false; rating = 0"
+                                        class="px-6 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                    Cancel
+                                </button>
+                                <button type="submit" 
+                                        :disabled="rating === 0"
+                                        :class="rating === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-primary-700'"
+                                        class="px-6 py-2 bg-primary-600 text-white font-semibold rounded-lg transition-colors">
+                                    Submit Review
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            @elseif(auth()->user()->reviews()->where('product_id', $product->id)->exists())
+                <div class="mt-8 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                    <div class="flex items-center">
+                        <svg class="h-5 w-5 text-blue-600 dark:text-blue-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                        </svg>
+                        <p class="text-blue-800 dark:text-blue-300">You have already reviewed this product.</p>
+                    </div>
+                </div>
+            @elseif(!auth()->user()->hasPurchased($product->id))
+                <div class="mt-8 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+                    <div class="flex items-center">
+                        <svg class="h-5 w-5 text-yellow-600 dark:text-yellow-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                        </svg>
+                        <p class="text-yellow-800 dark:text-yellow-300">You need to purchase this product before you can review it.</p>
+                    </div>
                 </div>
             @endif
         @endauth

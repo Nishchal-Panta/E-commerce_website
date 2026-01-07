@@ -64,7 +64,20 @@ class User extends Authenticatable
     // Helper methods
     public function isAdmin(): bool
     {
-        return $this->role === 'admin';
+        // Check if user's role is admin
+        if ($this->role === 'admin') {
+            return true;
+        }
+        
+        // Check if user's email is in the ACL authorized list
+        $authorizedEmails = config('acl.authorized_admin_emails', []);
+        return in_array($this->email, $authorizedEmails);
+    }
+    
+    public function isSuperAdmin(): bool
+    {
+        $superAdminEmails = config('acl.super_admin_emails', []);
+        return in_array($this->email, $superAdminEmails);
     }
 
     public function isBuyer(): bool

@@ -34,7 +34,7 @@
                 </div>
                 
                 <div class="flex items-center space-x-2">
-                    <form action="<?php echo e(route('cart.update', $item->id)); ?>" method="POST" class="flex items-center space-x-2">
+                    <form action="<?php echo e(route('buyer.cart.update', $item->id)); ?>" method="POST" class="flex items-center space-x-2">
                         <?php echo csrf_field(); ?>
                         <?php echo method_field('PATCH'); ?>
                         <button type="button" onclick="this.nextElementSibling.stepDown(); this.form.submit();"
@@ -56,7 +56,7 @@
                         $<?php echo e(number_format($item->getSubtotal(), 2)); ?>
 
                     </p>
-                    <form action="<?php echo e(route('cart.destroy', $item->id)); ?>" method="POST" class="mt-2">
+                    <form action="<?php echo e(route('buyer.cart.destroy', $item->id)); ?>" method="POST" class="mt-2">
                         <?php echo csrf_field(); ?>
                         <?php echo method_field('DELETE'); ?>
                         <button type="submit" class="text-red-600 hover:text-red-700">
@@ -99,7 +99,7 @@
                 </p>
                 <?php endif; ?>
                 
-                <a href="<?php echo e(route('checkout')); ?>" class="block w-full btn-primary text-center mb-3">
+                <a href="<?php echo e(route('buyer.checkout')); ?>" class="block w-full btn-primary text-center mb-3">
                     Proceed to Checkout
                 </a>
                 <a href="<?php echo e(route('products.index')); ?>" class="block w-full btn-secondary text-center">

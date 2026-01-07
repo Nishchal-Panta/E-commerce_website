@@ -13,7 +13,7 @@
             </svg>
             <h3 class="text-xl font-medium text-gray-900 dark:text-white mb-2">No orders yet</h3>
             <p class="text-gray-500 dark:text-gray-400 mb-6">Start shopping and your orders will appear here</p>
-            <a href="{{ route('buyer.products.index') }}" class="inline-block bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200">
+            <a href="{{ route('products.index') }}" class="inline-block bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200">
                 Start Shopping
             </a>
         </div>
@@ -45,7 +45,7 @@
 
                     <div class="p-6">
                         <div class="space-y-4">
-                            @foreach($order->items->take(3) as $item)
+                            @foreach($order->orderItems->take(3) as $item)
                                 <div class="flex items-center gap-4">
                                     @if($item->product->primaryImage)
                                         <img src="{{ asset('storage/' . $item->product->primaryImage->image_path) }}" 
@@ -72,9 +72,9 @@
                                 </div>
                             @endforeach
 
-                            @if($order->items->count() > 3)
+                            @if($order->orderItems->count() > 3)
                                 <p class="text-sm text-gray-600 dark:text-gray-400 text-center">
-                                    + {{ $order->items->count() - 3 }} more {{ Str::plural('item', $order->items->count() - 3) }}
+                                    + {{ $order->orderItems->count() - 3 }} more {{ Str::plural('item', $order->orderItems->count() - 3) }}
                                 </p>
                             @endif
                         </div>
@@ -88,15 +88,42 @@
                             </div>
                             
                             @if($order->canBeCancelled())
-                                <form action="{{ route('buyer.orders.cancel', $order->id) }}" method="POST" 
-                                      onsubmit="return confirm('Are you sure you want to cancel this order?')">
-                                    @csrf
-                                    @method('PATCH')
-                                    <button type="submit" 
+                                <div x-data="{ showCancelForm: false }">
+                                    <button @click="showCancelForm = !showCancelForm" 
+                                            type="button"
                                             class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-6 rounded-lg transition duration-200">
                                         Cancel Order
                                     </button>
-                                </form>
+                                    
+                                    <form x-show="showCancelForm" 
+                                          x-cloak
+                                          action="{{ route('buyer.orders.cancel', $order->id) }}" 
+                                          method="POST" 
+                                          class="mt-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg"
+                                          onsubmit="return confirm('Are you sure you want to cancel this order?')">
+                                        @csrf
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            Reason for Cancellation <span class="text-red-600">*</span>
+                                        </label>
+                                        <textarea name="cancellation_reason" 
+                                                  rows="3" 
+                                                  required
+                                                  maxlength="500"
+                                                  class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white mb-3"
+                                                  placeholder="Please explain why you want to cancel..."></textarea>
+                                        <div class="flex gap-2">
+                                            <button type="submit" 
+                                                    class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">
+                                                Confirm Cancel
+                                            </button>
+                                            <button @click="showCancelForm = false" 
+                                                    type="button"
+                                                    class="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">
+                                                Close
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
                             @endif
                         </div>
                     </div>

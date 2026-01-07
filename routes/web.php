@@ -43,25 +43,27 @@ Route::middleware(['auth', 'check.blocked'])->group(function () {
 // Buyer Routes
 Route::middleware(['auth', 'buyer', 'check.blocked'])->group(function () {
     // Cart
-    Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
-    Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
-    Route::patch('/cart/{id}', [CartController::class, 'update'])->name('cart.update');
-    Route::delete('/cart/{id}', [CartController::class, 'destroy'])->name('cart.destroy');
+    Route::get('/cart', [CartController::class, 'index'])->name('buyer.cart.index');
+    Route::post('/cart/add', [CartController::class, 'add'])->name('buyer.cart.add');
+    Route::patch('/cart/{id}', [CartController::class, 'update'])->name('buyer.cart.update');
+    Route::delete('/cart/{id}', [CartController::class, 'destroy'])->name('buyer.cart.destroy');
     
     // Orders
-    Route::get('/checkout', [OrderController::class, 'checkout'])->name('checkout');
-    Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
-    Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
-    Route::get('/orders/{id}', [OrderController::class, 'show'])->name('orders.show');
+    Route::get('/checkout', [OrderController::class, 'checkout'])->name('buyer.checkout');
+    Route::post('/orders', [OrderController::class, 'store'])->name('buyer.orders.store');
+    Route::get('/orders', [OrderController::class, 'index'])->name('buyer.orders.index');
+    Route::get('/orders/{id}', [OrderController::class, 'show'])->name('buyer.orders.show');
+    Route::post('/orders/{id}/cancel', [OrderController::class, 'cancel'])->name('buyer.orders.cancel');
     
     // Reviews
-    Route::post('/reviews', [ReviewController::class, 'store'])->name('reviews.store');
+    Route::post('/reviews', [ReviewController::class, 'store'])->name('buyer.reviews.store');
+    Route::get('/reviews/create', [ReviewController::class, 'create'])->name('buyer.reviews.create');
     
     // Account
-    Route::get('/account', [AccountController::class, 'edit'])->name('account.edit');
-    Route::put('/account', [AccountController::class, 'update'])->name('account.update');
-    Route::put('/account/password', [AccountController::class, 'updatePassword'])->name('account.password');
-    Route::delete('/account', [AccountController::class, 'destroy'])->name('account.destroy');
+    Route::get('/account', [AccountController::class, 'edit'])->name('buyer.account.edit');
+    Route::put('/account', [AccountController::class, 'update'])->name('buyer.account.update');
+    Route::put('/account/password', [AccountController::class, 'updatePassword'])->name('buyer.account.password');
+    Route::delete('/account', [AccountController::class, 'destroy'])->name('buyer.account.destroy');
 });
 
 // Admin Routes

@@ -39,7 +39,7 @@
                     <!-- Cart -->
                     @auth
                         @if(auth()->user()->isBuyer())
-                        <a href="{{ route('cart.index') }}" class="relative text-gray-700 dark:text-gray-300 hover:text-indigo-600">
+                        <a href="{{ route('buyer.cart.index') }}" class="relative text-gray-700 dark:text-gray-300 hover:text-indigo-600">
                             <i class="fas fa-shopping-cart text-2xl"></i>
                             @if($cartCount > 0)
                             <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
@@ -53,12 +53,15 @@
                     <!-- User Menu -->
                     @auth
                     <div x-data="{ open: false }" class="relative">
-                        <button @click="open = !open" class="flex items-center space-x-2 text-gray-700 dark:text-gray-300 hover:text-indigo-600">
+                        <button @click="open = !open" class="flex items-center space-x-2 text-gray-700 dark:text-gray-300 hover:text-indigo-600 transition">
                             @if(auth()->user()->profile_photo)
-                            <img src="{{ asset('storage/' . auth()->user()->profile_photo) }}" class="w-8 h-8 rounded-full object-cover" alt="Profile">
+                            <img src="{{ asset('storage/' . auth()->user()->profile_photo) }}" 
+                                 class="w-8 h-8 rounded-full object-cover border-2 border-gray-300 dark:border-gray-600 hover:border-indigo-500 transition" 
+                                 alt="Profile"
+                                 onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22%236366f1%22><circle cx=%2212%22 cy=%228%22 r=%224%22/><path d=%22M12 14c-3.866 0-7 3.134-7 7h14c0-3.866-3.134-7-7-7z%22/></svg>';">
                             @else
-                            <div class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white">
-                                {{ substr(auth()->user()->username, 0, 1) }}
+                            <div class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white font-semibold border-2 border-indigo-700">
+                                {{ strtoupper(substr(auth()->user()->username, 0, 1)) }}
                             </div>
                             @endif
                             <span class="font-medium">{{ auth()->user()->username }}</span>
@@ -67,11 +70,17 @@
                         
                         <div x-show="open" @click.away="open = false" 
                             class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg py-2 z-50">
+                            @if(auth()->user()->isAdmin())
+                            <a href="{{ route('admin.dashboard') }}" class="block px-4 py-2 text-indigo-600 dark:text-indigo-400 hover:bg-gray-100 dark:hover:bg-gray-700 font-semibold">
+                                <i class="fas fa-crown mr-2"></i> Admin Panel
+                            </a>
+                            <hr class="my-2 border-gray-200 dark:border-gray-700">
+                            @endif
                             @if(auth()->user()->isBuyer())
-                            <a href="{{ route('account.edit') }}" class="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                            <a href="{{ route('buyer.account.edit') }}" class="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
                                 <i class="fas fa-user mr-2"></i> Account Settings
                             </a>
-                            <a href="{{ route('orders.index') }}" class="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                            <a href="{{ route('buyer.orders.index') }}" class="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
                                 <i class="fas fa-box mr-2"></i> My Orders
                             </a>
                             @endif
@@ -187,5 +196,7 @@
             </div>
         </div>
     </footer>
+    
+    @stack('scripts')
 </body>
 </html>

@@ -23,7 +23,7 @@
         @endif
 
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8">
-            <form action="{{ route('buyer.bug_reports.store') }}" method="POST">
+            <form action="{{ route('report.store') }}" method="POST">
                 @csrf
 
                 <!-- Report Type -->
@@ -100,7 +100,7 @@
                         </svg>
                         Submit Report
                     </button>
-                    <a href="{{ route('buyer.home') }}" 
+                    <a href="{{ route('home') }}" 
                        class="flex-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-semibold py-3 px-6 rounded-lg transition duration-200 text-center">
                         Cancel
                     </a>

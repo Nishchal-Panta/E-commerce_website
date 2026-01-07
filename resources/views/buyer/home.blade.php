@@ -17,8 +17,8 @@
                 x-transition:enter-end="opacity-100 transform translate-x-0"
                 class="absolute inset-0 flex items-center justify-center p-8">
                 <a href="{{ route('products.show', $product->id) }}" class="flex flex-col md:flex-row items-center space-x-8">
-                    @if($product->getPrimaryImage())
-                    <img src="{{ asset('storage/' . $product->getPrimaryImage()->image_path) }}" 
+                    @if($product->primaryImage)
+                    <img src="{{ asset('storage/' . $product->primaryImage->image_path) }}" 
                         class="w-64 h-64 object-cover rounded-lg shadow-md" alt="{{ $product->name }}">
                     @endif
                     <div class="text-center md:text-left">
@@ -79,15 +79,26 @@
             </div>
             
             <!-- Brand -->
-            <div>
+            <div x-data="{ open: false }" class="relative">
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Brand</label>
-                <select name="brand[]" multiple class="input-field h-20">
+                <button @click="open = !open" type="button"
+                        class="w-full px-4 py-2 text-left border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white flex justify-between items-center">
+                    <span class="text-sm">{{ count((array)request('brand')) > 0 ? count((array)request('brand')) . ' selected' : 'Select brands' }}</span>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                <div x-show="open" @click.away="open = false" x-cloak
+                     class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-48 overflow-y-auto">
                     @foreach($brands as $brand)
-                    <option value="{{ $brand }}" {{ in_array($brand, (array)request('brand')) ? 'selected' : '' }}>
-                        {{ $brand }}
-                    </option>
+                    <label class="flex items-center px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer">
+                        <input type="checkbox" name="brand[]" value="{{ $brand }}" 
+                               {{ in_array($brand, (array)request('brand')) ? 'checked' : '' }}
+                               class="mr-2 rounded text-primary-600 focus:ring-primary-500">
+                        <span class="text-sm text-gray-700 dark:text-gray-300">{{ $brand }}</span>
+                    </label>
                     @endforeach
-                </select>
+                </div>
             </div>
             
             <!-- Price Range -->
@@ -115,18 +126,30 @@
     <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">All Products</h2>
     
     @if($products->count() > 0)
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8" x-data="{ showModal: false, modalImage: '', scale: 1 }">
         @foreach($products as $product)
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-xl transition duration-300">
-            <a href="{{ route('products.show', $product->id) }}">
-                @if($product->getPrimaryImage())
-                <img src="{{ asset('storage/' . $product->getPrimaryImage()->image_path) }}" 
-                    class="w-full h-48 object-cover" alt="{{ $product->name }}">
+            <div class="relative group">
+                @if($product->primaryImage)
+                <a href="{{ route('products.show', $product->id) }}" class="block relative">
+                    <img src="{{ asset('storage/' . $product->primaryImage->image_path) }}" 
+                        class="w-full h-48 object-cover" alt="{{ $product->name }}">
+                    <button type="button"
+                            @click.prevent="showModal = true; modalImage = '{{ asset('storage/' . $product->primaryImage->image_path) }}'; scale = 1"
+                            class="absolute top-2 right-2 bg-white dark:bg-gray-800 bg-opacity-90 dark:bg-opacity-90 text-gray-700 dark:text-gray-300 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 hover:scale-110 transform">
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"></path>
+                        </svg>
+                    </button>
+                </a>
                 @else
-                <div class="w-full h-48 bg-gray-200 flex items-center justify-center">
-                    <i class="fas fa-image text-gray-400 text-4xl"></i>
-                </div>
+                <a href="{{ route('products.show', $product->id) }}">
+                    <div class="w-full h-48 bg-gray-200 flex items-center justify-center">
+                        <i class="fas fa-image text-gray-400 text-4xl"></i>
+                    </div>
+                </a>
                 @endif
+            </div>
                 
                 <div class="p-4">
                     <h3 class="font-semibold text-gray-900 dark:text-white mb-2 truncate">{{ $product->name }}</h3>
@@ -141,7 +164,7 @@
                     
                     @auth
                         @if(auth()->user()->isBuyer())
-                        <form action="{{ route('cart.add') }}" method="POST">
+                        <form action="{{ route('buyer.cart.add') }}" method="POST">
                             @csrf
                             <input type="hidden" name="product_id" value="{{ $product->id }}">
                             <input type="hidden" name="quantity" value="1">
@@ -156,9 +179,59 @@
                         @endif
                     @endauth
                 </div>
-            </a>
         </div>
         @endforeach
+
+        <!-- Image Zoom Modal -->
+        <div x-show="showModal" 
+             x-cloak
+             @click.self="showModal = false; scale = 1"
+             class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90 p-4"
+             style="display: none;">
+            <div class="relative max-w-7xl max-h-screen w-full h-full flex flex-col items-center justify-center">
+                <!-- Close Button -->
+                <button @click="showModal = false; scale = 1" 
+                        class="absolute top-4 right-4 text-white hover:text-gray-300 transition-colors z-10">
+                    <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+
+                <!-- Zoom Controls -->
+                <div class="absolute top-4 left-4 flex gap-2 z-10">
+                    <button @click="scale = Math.min(scale + 0.5, 5)" 
+                            class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg transition-colors">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"></path>
+                        </svg>
+                    </button>
+                    <button @click="scale = Math.max(scale - 0.5, 0.5)" 
+                            class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg transition-colors">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7"></path>
+                        </svg>
+                    </button>
+                    <button @click="scale = 1" 
+                            class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg transition-colors">
+                        Reset
+                    </button>
+                </div>
+
+                <!-- Zoom Level Indicator -->
+                <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-white bg-opacity-20 text-white px-4 py-2 rounded-lg z-10">
+                    <span x-text="`${Math.round(scale * 100)}%`"></span>
+                </div>
+
+                <!-- Zoomable Image -->
+                <div class="overflow-auto w-full h-full flex items-center justify-center">
+                    <img :src="modalImage" 
+                         alt="Product Image" 
+                         :style="`transform: scale(${scale}); transition: transform 0.2s ease;`"
+                         class="max-w-none cursor-move select-none"
+                         draggable="false">
+                </div>
+            </div>
+        </div>
     </div>
     
     <!-- Pagination -->

@@ -31,7 +31,7 @@
                 </div>
                 
                 <div class="flex items-center space-x-2">
-                    <form action="{{ route('cart.update', $item->id) }}" method="POST" class="flex items-center space-x-2">
+                    <form action="{{ route('buyer.cart.update', $item->id) }}" method="POST" class="flex items-center space-x-2">
                         @csrf
                         @method('PATCH')
                         <button type="button" onclick="this.nextElementSibling.stepDown(); this.form.submit();"
@@ -52,7 +52,7 @@
                     <p class="text-lg font-bold text-gray-900 dark:text-white">
                         ${{ number_format($item->getSubtotal(), 2) }}
                     </p>
-                    <form action="{{ route('cart.destroy', $item->id) }}" method="POST" class="mt-2">
+                    <form action="{{ route('buyer.cart.destroy', $item->id) }}" method="POST" class="mt-2">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="text-red-600 hover:text-red-700">
@@ -95,7 +95,7 @@
                 </p>
                 @endif
                 
-                <a href="{{ route('checkout') }}" class="block w-full btn-primary text-center mb-3">
+                <a href="{{ route('buyer.checkout') }}" class="block w-full btn-primary text-center mb-3">
                     Proceed to Checkout
                 </a>
                 <a href="{{ route('products.index') }}" class="block w-full btn-secondary text-center">

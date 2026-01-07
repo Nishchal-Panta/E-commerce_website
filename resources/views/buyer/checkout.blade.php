@@ -1,0 +1,109 @@
+@extends('layouts.app')
+
+@section('title', 'Checkout')
+
+@section('content')
+<div class="max-w-6xl mx-auto">
+    <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-8">Checkout</h1>
+    
+    <form action="{{ route('orders.store') }}" method="POST">
+        @csrf
+        
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Checkout Form -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Shipping Address -->
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+                    <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Shipping Address</h2>
+                    <textarea name="shipping_address" rows="4" required
+                        class="input-field @error('shipping_address') border-red-500 @enderror"
+                        placeholder="Enter your complete shipping address">{{ old('shipping_address') }}</textarea>
+                    @error('shipping_address')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+                
+                <!-- Payment Method -->
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+                    <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Payment Method</h2>
+                    
+                    <div class="space-y-3">
+                        <label class="flex items-center p-4 border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700">
+                            <input type="radio" name="payment_method" value="card" required class="mr-3">
+                            <div>
+                                <p class="font-semibold text-gray-900 dark:text-white">Credit/Debit Card</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Pay securely with your card</p>
+                            </div>
+                        </label>
+                        
+                        <label class="flex items-center p-4 border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700">
+                            <input type="radio" name="payment_method" value="cash_on_delivery" required class="mr-3">
+                            <div>
+                                <p class="font-semibold text-gray-900 dark:text-white">Cash on Delivery</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Pay when you receive</p>
+                            </div>
+                        </label>
+                    </div>
+                    @error('payment_method')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+                
+                <!-- Order Items -->
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+                    <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Order Items</h2>
+                    <div class="space-y-4">
+                        @foreach($cartItems as $item)
+                        <div class="flex items-center space-x-4 pb-4 border-b border-gray-200 dark:border-gray-700">
+                            @if($item->product->getPrimaryImage())
+                            <img src="{{ asset('storage/' . $item->product->getPrimaryImage()->image_path) }}" 
+                                class="w-16 h-16 object-cover rounded-lg" alt="{{ $item->product->name }}">
+                            @endif
+                            <div class="flex-1">
+                                <p class="font-semibold text-gray-900 dark:text-white">{{ $item->product->name }}</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Quantity: {{ $item->quantity }}</p>
+                            </div>
+                            <p class="font-bold text-gray-900 dark:text-white">${{ number_format($item->getSubtotal(), 2) }}</p>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Order Summary -->
+            <div class="lg:col-span-1">
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 sticky top-20">
+                    <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Order Summary</h2>
+                    
+                    <div class="space-y-3 mb-6">
+                        <div class="flex justify-between text-gray-700 dark:text-gray-300">
+                            <span>Subtotal</span>
+                            <span>${{ number_format($subtotal, 2) }}</span>
+                        </div>
+                        <div class="flex justify-between text-gray-700 dark:text-gray-300">
+                            <span>Tax (10%)</span>
+                            <span>${{ number_format($tax, 2) }}</span>
+                        </div>
+                        <div class="flex justify-between text-gray-700 dark:text-gray-300">
+                            <span>Shipping</span>
+                            <span>{{ $shipping == 0 ? 'FREE' : '$' . number_format($shipping, 2) }}</span>
+                        </div>
+                        <hr class="border-gray-300 dark:border-gray-600">
+                        <div class="flex justify-between text-xl font-bold text-gray-900 dark:text-white">
+                            <span>Total</span>
+                            <span>${{ number_format($total, 2) }}</span>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="w-full btn-primary mb-3">
+                        <i class="fas fa-lock mr-2"></i> Place Order
+                    </button>
+                    <a href="{{ route('cart.index') }}" class="block w-full btn-secondary text-center">
+                        Back to Cart
+                    </a>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+@endsection

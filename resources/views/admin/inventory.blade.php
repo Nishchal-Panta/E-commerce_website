@@ -1,0 +1,240 @@
+@extends('layouts.admin')
+
+@section('title', 'Inventory Management')
+
+@section('content')
+<div class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Inventory Management</h1>
+    <p class="text-gray-600 dark:text-gray-400 mt-2">Monitor and manage product stock levels</p>
+</div>
+
+<!-- Summary Cards -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Products</p>
+                <p class="text-3xl font-bold text-gray-900 dark:text-white mt-2">{{ $totalProducts }}</p>
+            </div>
+            <div class="p-3 bg-blue-100 dark:bg-blue-900 rounded-lg">
+                <svg class="h-8 w-8 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-600 dark:text-gray-400">In Stock</p>
+                <p class="text-3xl font-bold text-green-600 dark:text-green-400 mt-2">{{ $inStockCount }}</p>
+            </div>
+            <div class="p-3 bg-green-100 dark:bg-green-900 rounded-lg">
+                <svg class="h-8 w-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Low Stock</p>
+                <p class="text-3xl font-bold text-yellow-600 dark:text-yellow-400 mt-2">{{ $lowStockCount }}</p>
+            </div>
+            <div class="p-3 bg-yellow-100 dark:bg-yellow-900 rounded-lg">
+                <svg class="h-8 w-8 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Out of Stock</p>
+                <p class="text-3xl font-bold text-red-600 dark:text-red-400 mt-2">{{ $outOfStockCount }}</p>
+            </div>
+            <div class="p-3 bg-red-100 dark:bg-red-900 rounded-lg">
+                <svg class="h-8 w-8 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
+    <form method="GET" action="{{ route('admin.inventory.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div>
+            <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Stock Status</label>
+            <select id="status" name="status" 
+                    class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white">
+                <option value="">All Products</option>
+                <option value="in_stock" {{ request('status') == 'in_stock' ? 'selected' : '' }}>In Stock</option>
+                <option value="low_stock" {{ request('status') == 'low_stock' ? 'selected' : '' }}>Low Stock</option>
+                <option value="out_of_stock" {{ request('status') == 'out_of_stock' ? 'selected' : '' }}>Out of Stock</option>
+            </select>
+        </div>
+
+        <div>
+            <label for="category" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Category</label>
+            <select id="category" name="category" 
+                    class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white">
+                <option value="">All Categories</option>
+                <option value="Electronics" {{ request('category') == 'Electronics' ? 'selected' : '' }}>Electronics</option>
+                <option value="Clothing" {{ request('category') == 'Clothing' ? 'selected' : '' }}>Clothing</option>
+                <option value="Footwear" {{ request('category') == 'Footwear' ? 'selected' : '' }}>Footwear</option>
+                <option value="Bags" {{ request('category') == 'Bags' ? 'selected' : '' }}>Bags</option>
+                <option value="Sports" {{ request('category') == 'Sports' ? 'selected' : '' }}>Sports</option>
+            </select>
+        </div>
+
+        <div>
+            <label for="search" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Search</label>
+            <input type="text" id="search" name="search" value="{{ request('search') }}" 
+                   placeholder="Product name or ID..." 
+                   class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white">
+        </div>
+
+        <div class="flex items-end">
+            <button type="submit" class="w-full bg-primary-600 hover:bg-primary-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">
+                Apply Filters
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Inventory Table -->
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead class="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Product</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Category</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Price</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Current Stock</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Low Stock Threshold</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                @forelse($products as $product)
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                        <td class="px-6 py-4">
+                            <div class="flex items-center">
+                                @if($product->primaryImage)
+                                    <img src="{{ asset('storage/' . $product->primaryImage->image_path) }}" 
+                                         alt="{{ $product->name }}" 
+                                         class="w-12 h-12 object-cover rounded-lg mr-3">
+                                @else
+                                    <div class="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center mr-3">
+                                        <svg class="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                        </svg>
+                                    </div>
+                                @endif
+                                <div>
+                                    <p class="font-medium text-gray-900 dark:text-white">{{ $product->name }}</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">ID: {{ $product->id }}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">
+                            {{ $product->category ?? 'N/A' }}
+                        </td>
+                        <td class="px-6 py-4 text-sm font-semibold text-gray-900 dark:text-white">
+                            ${{ number_format($product->price, 2) }}
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="text-lg font-bold {{ $product->inventory_quantity === 0 ? 'text-red-600 dark:text-red-400' : ($product->isLowStock() ? 'text-yellow-600 dark:text-yellow-400' : 'text-green-600 dark:text-green-400') }}">
+                                {{ $product->inventory_quantity }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">
+                            {{ $product->low_stock_threshold }}
+                        </td>
+                        <td class="px-6 py-4">
+                            @if($product->inventory_quantity === 0)
+                                <span class="px-3 py-1 rounded-full text-xs font-semibold bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200">
+                                    Out of Stock
+                                </span>
+                            @elseif($product->isLowStock())
+                                <span class="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 flex items-center w-fit">
+                                    <svg class="h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    Low Stock
+                                </span>
+                            @else
+                                <span class="px-3 py-1 rounded-full text-xs font-semibold bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
+                                    In Stock
+                                </span>
+                            @endif
+                        </td>
+                        <td class="px-6 py-4 text-sm">
+                            <a href="{{ route('admin.products.edit', $product->id) }}" 
+                               class="text-primary-600 dark:text-primary-400 hover:underline">
+                                Update Stock
+                            </a>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="7" class="px-6 py-12 text-center">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                            </svg>
+                            <p class="mt-4 text-gray-500 dark:text-gray-400">No products found</p>
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    @if($products->hasPages())
+        <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
+            {{ $products->links() }}
+        </div>
+    @endif
+</div>
+
+<!-- Low Stock Alert Chart -->
+@if($lowStockProducts->isNotEmpty())
+    <div class="mt-8 bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+        <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-6">Low Stock Alert</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            @foreach($lowStockProducts as $product)
+                <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="font-semibold text-gray-900 dark:text-white">{{ Str::limit($product->name, 30) }}</h3>
+                        <span class="text-yellow-600 dark:text-yellow-400">
+                            <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                            </svg>
+                        </span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-600 dark:text-gray-400">Current Stock:</span>
+                        <span class="text-lg font-bold text-yellow-600 dark:text-yellow-400">{{ $product->inventory_quantity }}</span>
+                    </div>
+                    <div class="mt-3">
+                        <a href="{{ route('admin.products.edit', $product->id) }}" 
+                           class="text-sm text-primary-600 dark:text-primary-400 hover:underline">
+                            Restock Now →
+                        </a>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </div>
+@endif
+@endsection

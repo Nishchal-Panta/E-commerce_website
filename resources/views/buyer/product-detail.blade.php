@@ -357,7 +357,7 @@
                     @endif
                 </form>
             @else
-                <a href="{{ route('auth.login') }}" class="block w-full bg-primary-600 hover:bg-primary-700 text-white font-bold py-4 px-6 rounded-lg transition duration-200 text-center text-lg">
+                <a href="{{ route('login') }}" class="block w-full bg-primary-600 hover:bg-primary-700 text-white font-bold py-4 px-6 rounded-lg transition duration-200 text-center text-lg">
                     Login to Purchase
                 </a>
             @endauth

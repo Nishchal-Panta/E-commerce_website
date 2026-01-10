@@ -18,6 +18,7 @@ class User extends Authenticatable
         'role',
         'is_active',
         'is_blocked',
+        'status',
     ];
 
     protected $hidden = [
@@ -101,7 +102,10 @@ class User extends Authenticatable
             ->whereHas('orderItems', function ($query) use ($productId) {
                 $query->where('product_id', $productId);
             })
-            ->where('payment_status', 'completed')
+            ->where(function ($query) {
+                $query->where('payment_status', 'completed')
+                      ->orWhere('status', 'delivered');
+            })
             ->exists();
     }
 }

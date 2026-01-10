@@ -35,6 +35,18 @@ class LoginController extends Controller
         $credentials = $request->only('email', 'password');
         $remember = $request->filled('remember');
 
+        // Check if user exists and is not deleted
+        $user = \App\Models\User::where('email', $credentials['email'])
+            ->where('status', 'active')
+            ->first();
+        
+        if (!$user) {
+            RateLimiter::hit($key, 60);
+            throw ValidationException::withMessages([
+                'email' => ['The provided credentials are incorrect.'],
+            ]);
+        }
+
         if (Auth::attempt($credentials, $remember)) {
             RateLimiter::clear($key);
             $request->session()->regenerate();

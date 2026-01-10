@@ -36,8 +36,11 @@ class AdminInventoryController extends Controller
             ->take(10)
             ->get();
 
+        $totalProducts = Product::count();
+        $inStockCount = Product::where('inventory_quantity', '>', 0)->count();
         $lowStockCount = Product::whereColumn('inventory_quantity', '<=', 'low_stock_threshold')->count();
+        $outOfStockCount = Product::where('inventory_quantity', 0)->count();
 
-        return view('admin.inventory', compact('products', 'lowStockProducts', 'lowStockCount'));
+        return view('admin.inventory', compact('products', 'lowStockProducts', 'totalProducts', 'inStockCount', 'lowStockCount', 'outOfStockCount'));
     }
 }

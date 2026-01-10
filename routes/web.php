@@ -67,12 +67,15 @@ Route::middleware(['auth', 'buyer', 'check.blocked'])->group(function () {
 });
 
 // Admin Routes
+// Toggle Customer View (must be outside admin middleware to work when exiting)
+Route::middleware(['auth'])->post('/admin/toggle-customer-view', [AdminDashboardController::class, 'toggleCustomerView'])->name('admin.toggle-customer-view');
+
+// Admin Routes
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     // Dashboard
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
     
-    // Products
-    Route::get('/products', [AdminProductController::class, 'index'])->name('products.index');
+    // Products - moved to inventory
     Route::get('/products/create', [AdminProductController::class, 'create'])->name('products.create');
     Route::post('/products', [AdminProductController::class, 'store'])->name('products.store');
     Route::get('/products/{id}/edit', [AdminProductController::class, 'edit'])->name('products.edit');

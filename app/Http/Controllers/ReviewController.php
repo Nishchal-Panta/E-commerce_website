@@ -4,10 +4,34 @@ namespace App\Http\Controllers;
 
 use App\Models\Review;
 use App\Models\ReviewPhoto;
+use App\Models\Product;
 use Illuminate\Http\Request;
 
 class ReviewController extends Controller
 {
+    public function create(Request $request)
+    {
+        $request->validate([
+            'product_id' => 'required|exists:products,id',
+        ]);
+
+        $product = Product::findOrFail($request->product_id);
+
+        // Check if user has purchased this product
+        if (!auth()->user()->hasPurchased($request->product_id)) {
+            return redirect()->back()->with('error', 'You can only review products you have purchased.');
+        }
+
+        // Check if user has already reviewed this product
+        if (Review::where('product_id', $request->product_id)
+            ->where('buyer_id', auth()->id())
+            ->exists()) {
+            return redirect()->back()->with('error', 'You have already reviewed this product.');
+        }
+
+        return view('buyer.review-create', compact('product'));
+    }
+
     public function store(Request $request)
     {
         $request->validate([

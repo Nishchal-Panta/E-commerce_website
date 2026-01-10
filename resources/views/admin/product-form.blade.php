@@ -130,7 +130,7 @@
             <button type="submit" class="btn-primary">
                 <i class="fas fa-save mr-2"></i> {{ isset($product) ? 'Update' : 'Create' }} Product
             </button>
-            <a href="{{ route('admin.products.index') }}" class="btn-secondary">Cancel</a>
+            <a href="{{ route('admin.inventory.index') }}" class="btn-secondary">Cancel</a>
         </div>
     </form>
 </div>

@@ -61,192 +61,87 @@
     </div>
 </div>
 
-<!-- Filters -->
-<div class="mb-8">
-    <form method="GET" action="<?php echo e(route('products.index')); ?>" class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-        <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
-            <!-- Category -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Category</label>
-                <select name="category" class="input-field">
-                    <option value="">All Categories</option>
-                    <?php $__currentLoopData = $categories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $category): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                    <option value="<?php echo e($category); ?>" <?php echo e(request('category') == $category ? 'selected' : ''); ?>>
-                        <?php echo e($category); ?>
-
-                    </option>
-                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                </select>
-            </div>
-            
-            <!-- Brand -->
-            <div x-data="{ open: false }" class="relative">
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Brand</label>
-                <button @click="open = !open" type="button"
-                        class="w-full px-4 py-2 text-left border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-white flex justify-between items-center">
-                    <span class="text-sm"><?php echo e(count((array)request('brand')) > 0 ? count((array)request('brand')) . ' selected' : 'Select brands'); ?></span>
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                    </svg>
-                </button>
-                <div x-show="open" @click.away="open = false" x-cloak
-                     class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                    <?php $__currentLoopData = $brands; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $brand): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                    <label class="flex items-center px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer">
-                        <input type="checkbox" name="brand[]" value="<?php echo e($brand); ?>" 
-                               <?php echo e(in_array($brand, (array)request('brand')) ? 'checked' : ''); ?>
-
-                               class="mr-2 rounded text-primary-600 focus:ring-primary-500">
-                        <span class="text-sm text-gray-700 dark:text-gray-300"><?php echo e($brand); ?></span>
-                    </label>
-                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                </div>
-            </div>
-            
-            <!-- Price Range -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Min Price</label>
-                <input type="number" name="min_price" value="<?php echo e(request('min_price')); ?>" placeholder="$0" class="input-field">
-            </div>
-            
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Max Price</label>
-                <input type="number" name="max_price" value="<?php echo e(request('max_price')); ?>" placeholder="$1000" class="input-field">
-            </div>
-            
-            <!-- Actions -->
-            <div class="flex items-end space-x-2">
-                <button type="submit" class="btn-primary flex-1">Apply</button>
-                <a href="<?php echo e(route('products.index')); ?>" class="btn-secondary">Clear</a>
-            </div>
-        </div>
-    </form>
-</div>
-
-<!-- Product Grid -->
-<div>
-    <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">All Products</h2>
+<!-- Products by Category Sidebars -->
+<div class="mb-12 space-y-6">
+    <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-6">Shop by Category</h2>
     
-    <?php if($products->count() > 0): ?>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8" x-data="{ showModal: false, modalImage: '', scale: 1 }">
-        <?php $__currentLoopData = $products; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $product): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-xl transition duration-300">
-            <div class="relative group">
-                <?php if($product->primaryImage): ?>
-                <a href="<?php echo e(route('products.show', $product->id)); ?>" class="block relative">
-                    <img src="<?php echo e(asset('storage/' . $product->primaryImage->image_path)); ?>" 
-                        class="w-full h-48 object-cover" alt="<?php echo e($product->name); ?>">
-                    <button type="button"
-                            @click.prevent="showModal = true; modalImage = '<?php echo e(asset('storage/' . $product->primaryImage->image_path)); ?>'; scale = 1"
-                            class="absolute top-2 right-2 bg-white dark:bg-gray-800 bg-opacity-90 dark:bg-opacity-90 text-gray-700 dark:text-gray-300 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 hover:scale-110 transform">
-                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"></path>
-                        </svg>
-                    </button>
-                </a>
-                <?php else: ?>
-                <a href="<?php echo e(route('products.show', $product->id)); ?>">
-                    <div class="w-full h-48 bg-gray-200 flex items-center justify-center">
-                        <i class="fas fa-image text-gray-400 text-4xl"></i>
+    <?php $__currentLoopData = $productsByCategory; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $category => $data): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+    <!-- Category Strip -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden border-l-4 border-indigo-600 dark:border-indigo-400">
+        <div class="p-6">
+            <!-- Category Header -->
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center space-x-4">
+                    <div class="bg-gradient-to-br from-indigo-600 to-purple-600 rounded-lg p-3">
+                        <i class="fas fa-box text-white text-xl"></i>
                     </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white"><?php echo e(ucfirst($category)); ?></h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400"><?php echo e($data['count']); ?> <?php echo e(Str::plural('item', $data['count'])); ?></p>
+                    </div>
+                </div>
+                <a href="<?php echo e(route('products.index', ['category' => $category])); ?>" 
+                   class="px-4 py-2 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-gray-700 rounded-lg font-semibold text-sm transition-colors duration-200 border border-indigo-600 dark:border-indigo-400">
+                    <i class="fas fa-arrow-right mr-2"></i>View All
                 </a>
-                <?php endif; ?>
             </div>
+            
+            <!-- Horizontal Products Carousel -->
+            <div class="relative" x-data="{ scrollPosition: 0 }">
+                <!-- Left Arrow -->
+                <button @click="$refs.productScroll<?php echo e($loop->index); ?>.scrollBy({ left: -280, behavior: 'smooth' })" 
+                        class="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white dark:bg-gray-700 rounded-full p-2 shadow-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-all border border-gray-200 dark:border-gray-600">
+                    <i class="fas fa-chevron-left text-gray-700 dark:text-white"></i>
+                </button>
                 
-                <div class="p-4">
-                    <h3 class="font-semibold text-gray-900 dark:text-white mb-2 truncate"><?php echo e($product->name); ?></h3>
-                    <p class="text-xl text-indigo-600 dark:text-indigo-400 font-bold mb-2">$<?php echo e(number_format($product->price, 2)); ?></p>
-                    
-                    <div class="flex items-center mb-3">
-                        <?php for($i = 0; $i < 5; $i++): ?>
-                            <i class="fas fa-star text-sm <?php echo e($i < $product->getAverageRating() ? 'text-yellow-400' : 'text-gray-300'); ?>"></i>
-                        <?php endfor; ?>
-                        <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">(<?php echo e($product->getReviewCount()); ?>)</span>
+                <!-- Products Container -->
+                <div x-ref="productScroll<?php echo e($loop->index); ?>" 
+                     class="flex space-x-4 overflow-x-auto scroll-smooth pb-2 px-10"
+                     style="scrollbar-width: none; -ms-overflow-style: none;">
+                    <?php $__currentLoopData = $data['products']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $product): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                    <div class="flex-shrink-0 w-48">
+                        <a href="<?php echo e(route('products.show', $product->id)); ?>" class="block">
+                            <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 hover:shadow-md transition-all duration-200 border border-gray-200 dark:border-gray-600 h-full">
+                                <div class="flex flex-col space-y-2">
+                                    <div class="w-full h-32 rounded-md overflow-hidden bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-600">
+                                        <?php if($product->images->count() > 0): ?>
+                                        <img src="<?php echo e(asset('storage/' . $product->images->first()->image_path)); ?>" 
+                                             alt="<?php echo e($product->name); ?>" 
+                                             class="w-full h-full object-cover">
+                                        <?php else: ?>
+                                        <div class="w-full h-full flex items-center justify-center text-gray-400">
+                                            <i class="fas fa-image text-2xl"></i>
+                                        </div>
+                                        <?php endif; ?>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-semibold text-gray-900 dark:text-white truncate mb-1"><?php echo e($product->name); ?></p>
+                                        <div class="flex items-center justify-between">
+                                            <p class="text-sm font-bold text-indigo-600 dark:text-indigo-400">$<?php echo e(number_format($product->price, 2)); ?></p>
+                                            <?php if($product->getAverageRating() > 0): ?>
+                                            <div class="flex items-center">
+                                                <i class="fas fa-star text-yellow-400 text-xs"></i>
+                                                <span class="text-xs text-gray-600 dark:text-gray-400 ml-1"><?php echo e(number_format($product->getAverageRating(), 1)); ?></span>
+                                            </div>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
                     </div>
-                    
-                    <?php if(auth()->guard()->check()): ?>
-                        <?php if(auth()->user()->isBuyer()): ?>
-                        <form action="<?php echo e(route('buyer.cart.add')); ?>" method="POST">
-                            <?php echo csrf_field(); ?>
-                            <input type="hidden" name="product_id" value="<?php echo e($product->id); ?>">
-                            <input type="hidden" name="quantity" value="1">
-                            <button type="submit" class="w-full btn-primary text-sm" <?php echo e(!$product->isInStock() ? 'disabled' : ''); ?>>
-                                <?php if($product->isInStock()): ?>
-                                    <i class="fas fa-cart-plus mr-1"></i> Add to Cart
-                                <?php else: ?>
-                                    Out of Stock
-                                <?php endif; ?>
-                            </button>
-                        </form>
-                        <?php endif; ?>
-                    <?php endif; ?>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                 </div>
-        </div>
-        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-
-        <!-- Image Zoom Modal -->
-        <div x-show="showModal" 
-             x-cloak
-             @click.self="showModal = false; scale = 1"
-             class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90 p-4"
-             style="display: none;">
-            <div class="relative max-w-7xl max-h-screen w-full h-full flex flex-col items-center justify-center">
-                <!-- Close Button -->
-                <button @click="showModal = false; scale = 1" 
-                        class="absolute top-4 right-4 text-white hover:text-gray-300 transition-colors z-10">
-                    <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
+                
+                <!-- Right Arrow -->
+                <button @click="$refs.productScroll<?php echo e($loop->index); ?>.scrollBy({ left: 280, behavior: 'smooth' }}" 
+                        class="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white dark:bg-gray-700 rounded-full p-2 shadow-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-all border border-gray-200 dark:border-gray-600">
+                    <i class="fas fa-chevron-right text-gray-700 dark:text-white"></i>
                 </button>
-
-                <!-- Zoom Controls -->
-                <div class="absolute top-4 left-4 flex gap-2 z-10">
-                    <button @click="scale = Math.min(scale + 0.5, 5)" 
-                            class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg transition-colors">
-                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"></path>
-                        </svg>
-                    </button>
-                    <button @click="scale = Math.max(scale - 0.5, 0.5)" 
-                            class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg transition-colors">
-                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7"></path>
-                        </svg>
-                    </button>
-                    <button @click="scale = 1" 
-                            class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg transition-colors">
-                        Reset
-                    </button>
-                </div>
-
-                <!-- Zoom Level Indicator -->
-                <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-white bg-opacity-20 text-white px-4 py-2 rounded-lg z-10">
-                    <span x-text="`${Math.round(scale * 100)}%`"></span>
-                </div>
-
-                <!-- Zoomable Image -->
-                <div class="overflow-auto w-full h-full flex items-center justify-center">
-                    <img :src="modalImage" 
-                         alt="Product Image" 
-                         :style="`transform: scale(${scale}); transition: transform 0.2s ease;`"
-                         class="max-w-none cursor-move select-none"
-                         draggable="false">
-                </div>
             </div>
         </div>
     </div>
-    
-    <!-- Pagination -->
-    <div class="mt-8">
-        <?php echo e($products->links()); ?>
-
-    </div>
-    <?php else: ?>
-    <div class="text-center py-12">
-        <i class="fas fa-box-open text-6xl text-gray-400 mb-4"></i>
-        <p class="text-xl text-gray-600 dark:text-gray-400">No products found</p>
-    </div>
-    <?php endif; ?>
+    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
 </div>
 
 <script>

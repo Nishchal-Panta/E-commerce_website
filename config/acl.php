@@ -14,6 +14,7 @@ return [
 
     'authorized_admin_emails' => [
         'admin@ecommerce.com',
+        'nishchal@ecommerce.com'
         // Add more admin emails here
         // 'another.admin@example.com',
     ],
@@ -30,5 +31,8 @@ return [
 
     'super_admin_emails' => [
         'admin@ecommerce.com',
+        'nishchal@ecommerce.com'
+        // Add more super admin emails here
+        // 'another.super@admin.com
     ],
 ];

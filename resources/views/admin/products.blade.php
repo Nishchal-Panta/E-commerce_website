@@ -3,12 +3,7 @@
 @section('title', 'Manage Products')
 
 @section('content')
-<div class="flex justify-between items-center mb-8">
-    <h1 class="text-3xl font-bold text-gray-900">Products</h1>
-    <a href="{{ route('admin.products.create') }}" class="btn-primary">
-        <i class="fas fa-plus mr-2"></i> Add New Product
-    </a>
-</div>
+<h1 class="text-3xl font-bold text-gray-900 mb-8">Manage Products</h1>
 
 <!-- Search -->
 <div class="bg-white rounded-lg shadow-md p-4 mb-6">

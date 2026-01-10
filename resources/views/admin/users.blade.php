@@ -186,7 +186,7 @@
                             @if($user->id !== auth()->id() && $user->role !== 'admin')
                                 <div class="flex gap-3">
                                     @if($user->is_blocked)
-                                        <form action="{{ route('admin.users.unblock', $user->id) }}" method="POST" class="inline">
+                                        <form action="{{ route('admin.users.block', $user->id) }}" method="POST" class="inline">
                                             @csrf
                                             @method('PATCH')
                                             <button type="submit" class="text-green-600 dark:text-green-400 hover:underline">

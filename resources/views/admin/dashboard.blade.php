@@ -80,33 +80,107 @@
 </div>
 
 <!-- Recent Orders -->
-<div class="bg-white rounded-lg shadow-md p-6">
-    <h2 class="text-xl font-bold text-gray-900 mb-4">Recent Orders</h2>
+<div class="bg-white rounded-lg shadow-md p-6 mb-8">
+    <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-bold text-gray-900">Recent Orders</h2>
+        <a href="{{ route('admin.orders.index') }}" class="text-indigo-600 hover:text-indigo-800 text-sm font-semibold">
+            View All Orders <i class="fas fa-arrow-right ml-1"></i>
+        </a>
+    </div>
     <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
                 <tr>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Order ID</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Items</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
-                @foreach($recentOrders as $order)
-                <tr>
-                    <td class="px-6 py-4 whitespace-nowrap">#{{ $order->id }}</td>
+                @forelse($recentOrders as $order)
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <a href="{{ route('admin.orders.show', $order->id) }}" class="text-indigo-600 hover:text-indigo-900 font-semibold">
+                            #{{ $order->id }}
+                        </a>
+                    </td>
                     <td class="px-6 py-4 whitespace-nowrap">{{ $order->buyer->username }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap">${{ number_format($order->total_amount, 2) }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-gray-500">{{ $order->items->count() }} items</td>
+                    <td class="px-6 py-4 whitespace-nowrap font-semibold text-gray-900">${{ number_format($order->total_amount, 2) }}</td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <span class="px-2 py-1 text-xs rounded-full {{ $order->getStatusBadgeClass() }}">
                             {{ ucfirst($order->status) }}
                         </span>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap">{{ $order->created_at->format('M d, Y') }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-gray-500">{{ $order->created_at->format('M d, Y H:i') }}</td>
                 </tr>
-                @endforeach
+                @empty
+                <tr>
+                    <td colspan="6" class="px-6 py-8 text-center text-gray-500">
+                        <i class="fas fa-inbox text-4xl mb-2"></i>
+                        <p>No orders yet</p>
+                    </td>
+                </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Recent Restocks -->
+<div class="bg-white rounded-lg shadow-md p-6">
+    <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-bold text-gray-900">Recent Restocks (Last 7 Days)</h2>
+        <a href="{{ route('admin.inventory.index') }}" class="text-indigo-600 hover:text-indigo-800 text-sm font-semibold">
+            View Inventory <i class="fas fa-arrow-right ml-1"></i>
+        </a>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Price</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Current Stock</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Last Updated</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                @forelse($recentRestocks as $product)
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4">
+                        <div class="flex items-center">
+                            @if($product->images->count() > 0)
+                            <img src="{{ Storage::url($product->images->first()->image_path) }}" 
+                                 alt="{{ $product->name }}" 
+                                 class="w-12 h-12 object-cover rounded-lg mr-3">
+                            @else
+                            <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mr-3">
+                                <i class="fas fa-image text-gray-400"></i>
+                            </div>
+                            @endif
+                            <span class="font-medium text-gray-900">{{ $product->name }}</span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-gray-500">{{ $product->category }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap font-semibold text-gray-900">${{ number_format($product->price, 2) }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="font-bold text-green-600">{{ $product->inventory_quantity }}</span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-gray-500">{{ $product->updated_at->diffForHumans() }}</td>
+                </tr>
+                @empty
+                <tr>
+                    <td colspan="5" class="px-6 py-8 text-center text-gray-500">
+                        <i class="fas fa-box-open text-4xl mb-2"></i>
+                        <p>No recent restocks in the last 7 days</p>
+                    </td>
+                </tr>
+                @endforelse
             </tbody>
         </table>
     </div>

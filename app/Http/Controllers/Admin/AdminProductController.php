@@ -74,7 +74,7 @@ class AdminProductController extends Controller
             }
         }
 
-        return redirect()->route('admin.products.index')
+        return redirect()->route('admin.inventory.index')
             ->with('success', 'Product created successfully!');
     }
 
@@ -127,7 +127,7 @@ class AdminProductController extends Controller
             }
         }
 
-        return redirect()->route('admin.products.index')
+        return redirect()->route('admin.inventory.index')
             ->with('success', 'Product updated successfully!');
     }
 

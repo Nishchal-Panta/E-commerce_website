@@ -83,12 +83,30 @@ class AccountController extends Controller
             return back()->withErrors(['password' => 'Password is incorrect.']);
         }
 
+        // Delete profile photo if exists
         if ($user->profile_photo) {
             Storage::disk('public')->delete($user->profile_photo);
         }
 
-        $user->delete();
+        // Delete all review photos uploaded by this user
+        foreach ($user->reviews as $review) {
+            foreach ($review->photos as $photo) {
+                Storage::disk('public')->delete($photo->photo_path);
+            }
+        }
+
+        // Store user ID for verification
+        $userId = $user->id;
+        
+        // Invalidate all sessions for this user
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+        
+        // Logout before deleting to clear session
         auth()->logout();
+        
+        // Delete the user (cascade deletes will handle orders, carts, reviews, bug_reports)
+        $user->forceDelete();
 
         return redirect()->route('login')->with('success', 'Account deleted successfully.');
     }

@@ -18,9 +18,12 @@ class AdminReportController extends Controller
 
         $reports = $query->orderBy('created_at', 'desc')->paginate(20);
 
-        $pendingCount = BugReport::where('status', 'pending')->count();
+        $totalReports = BugReport::count();
+        $pendingReports = BugReport::where('status', 'pending')->count();
+        $inProgressReports = BugReport::where('status', 'in_progress')->count();
+        $resolvedReports = BugReport::where('status', 'resolved')->count();
 
-        return view('admin.reports', compact('reports', 'pendingCount'));
+        return view('admin.reports', compact('reports', 'totalReports', 'pendingReports', 'inProgressReports', 'resolvedReports'));
     }
 
     public function updateStatus(Request $request, $id)

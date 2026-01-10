@@ -173,9 +173,10 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm">
                             <div class="flex gap-3">
                                 @if($report->status !== 'resolved')
-                                    <form action="{{ route('admin.reports.resolve', $report->id) }}" method="POST" class="inline">
+                                    <form action="{{ route('admin.reports.status', $report->id) }}" method="POST" class="inline">
                                         @csrf
                                         @method('PATCH')
+                                        <input type="hidden" name="status" value="resolved">
                                         <button type="submit" class="text-green-600 dark:text-green-400 hover:underline">
                                             Resolve
                                         </button>

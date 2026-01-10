@@ -5,12 +5,13 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class AdminUserController extends Controller
 {
     public function index(Request $request)
     {
-        $query = User::query();
+        $query = User::where('status', 'active');
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -34,7 +35,12 @@ class AdminUserController extends Controller
 
         $users = $query->withCount('orders')->paginate(20);
 
-        return view('admin.users', compact('users'));
+        $totalUsers = User::where('status', 'active')->count();
+        $buyersCount = User::where('role', 'buyer')->where('status', 'active')->count();
+        $activeUsers = User::where('is_blocked', false)->where('status', 'active')->count();
+        $blockedUsers = User::where('is_blocked', true)->where('status', 'active')->count();
+
+        return view('admin.users', compact('users', 'totalUsers', 'buyersCount', 'activeUsers', 'blockedUsers'));
     }
 
     public function toggleBlock($id)
@@ -59,7 +65,30 @@ class AdminUserController extends Controller
             return back()->with('error', 'Cannot delete admin users.');
         }
 
-        $user->delete();
+        // Delete profile photo if exists
+        if ($user->profile_photo) {
+            Storage::disk('public')->delete($user->profile_photo);
+        }
+
+        // Revoke all sessions for this user
+        \Illuminate\Support\Facades\DB::table('sessions')
+            ->where('user_id', $user->id)
+            ->delete();
+
+        // Mark user as deleted and anonymize their data
+        $user->update([
+            'status' => 'deleted',
+            'username' => null,
+            'email' => null,
+            'password' => null,
+            'profile_photo' => null,
+            'is_blocked' => false,
+        ]);
+
+        // Delete profile photo if exists
+        if ($user->profile_photo) {
+            Storage::disk('public')->delete($user->profile_photo);
+        }
 
         return back()->with('success', 'User deleted successfully!');
     }

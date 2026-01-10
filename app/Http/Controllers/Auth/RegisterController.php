@@ -24,10 +24,10 @@ class RegisterController extends Controller
                 'string',
                 'min:3',
                 'max:20',
-                'unique:users',
+                'unique:users,username,NULL,id,status,active',
                 'regex:/^[a-zA-Z0-9_]+$/'
             ],
-            'email' => 'required|string|email|max:255|unique:users',
+            'email' => 'required|string|email|max:255|unique:users,email,NULL,id,status,active',
             'password' => [
                 'required',
                 'string',
@@ -53,6 +53,7 @@ class RegisterController extends Controller
             'password' => Hash::make($request->password),
             'profile_photo' => $profilePhotoPath,
             'role' => 'buyer',
+            'status' => 'active',
         ]);
 
         Auth::login($user);

@@ -59,6 +59,24 @@ class HomeController extends Controller
         $colors = Product::distinct()->whereNotNull('color')->pluck('color');
         $sizes = Product::distinct()->whereNotNull('size')->pluck('size');
 
-        return view('buyer.home', compact('trendingProducts', 'products', 'categories', 'brands', 'colors', 'sizes'));
+        // Products grouped by category (for sidebar display)
+        $productsByCategory = Product::select('category', \DB::raw('COUNT(*) as product_count'))
+            ->where('inventory_quantity', '>', 0)
+            ->groupBy('category')
+            ->get()
+            ->mapWithKeys(function ($item) {
+                return [
+                    $item->category => [
+                        'count' => $item->product_count,
+                        'products' => Product::where('category', $item->category)
+                            ->where('inventory_quantity', '>', 0)
+                            ->with('images')
+                            ->take(5)
+                            ->get()
+                    ]
+                ];
+            });
+
+        return view('buyer.home', compact('trendingProducts', 'products', 'categories', 'brands', 'colors', 'sizes', 'productsByCategory'));
     }
 }

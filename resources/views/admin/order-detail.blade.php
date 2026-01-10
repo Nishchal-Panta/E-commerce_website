@@ -35,7 +35,7 @@
             </div>
 
             <!-- Update Status Form -->
-            <form action="{{ route('admin.orders.update', $order->id) }}" method="POST" class="mb-6">
+            <form action="{{ route('admin.orders.status', $order->id) }}" method="POST" class="mb-6">
                 @csrf
                 @method('PATCH')
                 <div class="flex gap-4">

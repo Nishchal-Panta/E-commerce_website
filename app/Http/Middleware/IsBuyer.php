@@ -14,11 +14,18 @@ class IsBuyer
             return redirect()->route('login')->with('error', 'Please login to continue.');
         }
 
-        if (!auth()->user()->isBuyer()) {
+        $user = auth()->user();
+        
+        // Allow admins viewing as customer
+        if ($user->isAdmin() && session('view_as_customer', false)) {
+            return $next($request);
+        }
+
+        if (!$user->isBuyer()) {
             abort(403, 'Unauthorized. Buyer access required.');
         }
 
-        if (auth()->user()->isBlocked()) {
+        if ($user->isBlocked()) {
             auth()->logout();
             return redirect()->route('login')->with('error', 'Your account has been blocked. Please contact support.');
         }

@@ -11,10 +11,11 @@
         <!-- Cart Items -->
         <div class="lg:col-span-2 space-y-4">
             @foreach($cartItems as $item)
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 flex items-center space-x-4">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                 @if($item->product->getPrimaryImage())
                 <img src="{{ asset('storage/' . $item->product->getPrimaryImage()->image_path) }}" 
-                    class="w-24 h-24 object-cover rounded-lg" alt="{{ $item->product->name }}">
+                    class="w-full sm:w-24 h-32 sm:h-24 object-cover rounded-lg" alt="{{ $item->product->name }}">
                 @endif
                 
                 <div class="flex-1">
@@ -30,12 +31,12 @@
                     </p>
                 </div>
                 
-                <div class="flex items-center space-x-2">
-                    <form action="{{ route('buyer.cart.update', $item->id) }}" method="POST" class="flex items-center space-x-2">
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-2 w-full sm:w-auto">
+                    <form action="{{ route('buyer.cart.update', $item->id) }}" method="POST" class="flex items-center justify-center gap-2">
                         @csrf
                         @method('PATCH')
                         <button type="button" onclick="this.nextElementSibling.stepDown(); this.form.submit();"
-                            class="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full hover:bg-gray-300">
+                            class="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full hover:bg-gray-300 flex-shrink-0">
                             <i class="fas fa-minus text-sm"></i>
                         </button>
                         <input type="number" name="quantity" value="{{ $item->quantity }}" 
@@ -52,13 +53,14 @@
                     <p class="text-lg font-bold text-gray-900 dark:text-white">
                         ${{ number_format($item->getSubtotal(), 2) }}
                     </p>
-                    <form action="{{ route('buyer.cart.destroy', $item->id) }}" method="POST" class="mt-2">
+                    <form action="{{ route('buyer.cart.destroy', $item->id) }}" method="POST" class="w-full sm:w-auto">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="text-red-600 hover:text-red-700">
-                            <i class="fas fa-trash"></i> Remove
+                        <button type="submit" class="w-full sm:w-auto text-red-600 hover:text-red-800 px-3 py-2">
+                            <i class="fas fa-trash"></i>
                         </button>
                     </form>
+                </div>
                 </div>
             </div>
             @endforeach

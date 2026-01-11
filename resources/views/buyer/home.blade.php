@@ -9,21 +9,21 @@
     
     <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
         @if($trendingProducts->count() > 0)
-        <div class="relative h-96">
+        <div class="relative h-64 sm:h-80 md:h-96">
             @foreach($trendingProducts as $index => $product)
             <div x-show="currentSlide === {{ $index }}" 
                 x-transition:enter="transition ease-out duration-300"
                 x-transition:enter-start="opacity-0 transform translate-x-full"
                 x-transition:enter-end="opacity-100 transform translate-x-0"
-                class="absolute inset-0 flex items-center justify-center p-8">
-                <a href="{{ route('products.show', $product->id) }}" class="flex flex-col md:flex-row items-center space-x-8">
+                class="absolute inset-0 flex items-center justify-center p-4 sm:p-6 md:p-8">
+                <a href="{{ route('products.show', $product->id) }}" class="flex flex-col md:flex-row items-center md:space-x-8 space-y-4 md:space-y-0 w-full">
                     @if($product->primaryImage)
                     <img src="{{ asset('storage/' . $product->primaryImage->image_path) }}" 
-                        class="w-64 h-64 object-cover rounded-lg shadow-md" alt="{{ $product->name }}">
+                        class="w-40 h-40 sm:w-48 sm:h-48 md:w-64 md:h-64 object-cover rounded-lg shadow-md flex-shrink-0" alt="{{ $product->name }}">
                     @endif
                     <div class="text-center md:text-left">
-                        <h3 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">{{ $product->name }}</h3>
-                        <p class="text-xl text-indigo-600 dark:text-indigo-400 font-semibold mb-4">${{ number_format($product->price, 2) }}</p>
+                        <h3 class="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-2">{{ $product->name }}</h3>
+                        <p class="text-lg sm:text-xl text-indigo-600 dark:text-indigo-400 font-semibold mb-4">${{ number_format($product->price, 2) }}</p>
                         <div class="flex items-center justify-center md:justify-start mb-4">
                             @for($i = 0; $i < 5; $i++)
                                 <i class="fas fa-star {{ $i < $product->getAverageRating() ? 'text-yellow-400' : 'text-gray-300' }}"></i>
@@ -70,7 +70,7 @@
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden border-l-4 border-indigo-600 dark:border-indigo-400">
         <div class="p-6">
             <!-- Category Header -->
-            <div class="flex items-center justify-between mb-4">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-3">
                 <div class="flex items-center space-x-4">
                     <div class="bg-gradient-to-br from-indigo-600 to-purple-600 rounded-lg p-3">
                         <i class="fas fa-box text-white text-xl"></i>
@@ -99,7 +99,7 @@
                      class="flex space-x-4 overflow-x-auto scroll-smooth pb-2 px-10"
                      style="scrollbar-width: none; -ms-overflow-style: none;">
                     @foreach($data['products'] as $product)
-                    <div class="flex-shrink-0 w-48">
+                    <div class="flex-shrink-0 w-36 sm:w-44 md:w-48">
                         <a href="{{ route('products.show', $product->id) }}" class="block">
                             <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 hover:shadow-md transition-all duration-200 border border-gray-200 dark:border-gray-600 h-full">
                                 <div class="flex flex-col space-y-2">

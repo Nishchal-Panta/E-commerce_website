@@ -19,6 +19,19 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ReviewController;
 use Illuminate\Support\Facades\Route;
 
+// Debug test endpoint
+Route::get('/api/test', function () {
+    return response()->json([
+        'status' => 'success',
+        'message' => 'Laravel is working! ',
+        'timestamp' => now()->toDateTimeString(),
+        'server_ip' => request()->server('SERVER_ADDR'),
+        'client_ip' => request()->ip(),
+        'app_url' => config('app.url'),
+        'environment' => config('app.env'),
+    ]);
+});
+
 // Guest Routes
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
@@ -58,6 +71,9 @@ Route::middleware(['auth', 'buyer', 'check.blocked'])->group(function () {
     // Reviews
     Route::post('/reviews', [ReviewController::class, 'store'])->name('buyer.reviews.store');
     Route::get('/reviews/create', [ReviewController::class, 'create'])->name('buyer.reviews.create');
+    Route::get('/reviews/{id}/edit', [ReviewController::class, 'edit'])->name('buyer.reviews.edit');
+    Route::put('/reviews/{id}', [ReviewController::class, 'update'])->name('buyer.reviews.update');
+    Route::delete('/reviews/{id}', [ReviewController::class, 'destroy'])->name('buyer.reviews.destroy');
     
     // Account
     Route::get('/account', [AccountController::class, 'edit'])->name('buyer.account.edit');

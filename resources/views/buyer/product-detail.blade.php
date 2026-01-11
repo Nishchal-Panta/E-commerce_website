@@ -54,7 +54,7 @@
             </div>
             
             @if($product->images->count() > 1)
-                <div class="grid grid-cols-4 gap-4">
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-4">
                     @foreach($product->images as $image)
                         <img src="{{ asset('storage/' . $image->image_path) }}" 
                              alt="{{ $product->name }}"
@@ -416,7 +416,7 @@
             </div>
 
             <!-- Individual Reviews -->
-            <div class="space-y-6">
+            <div class="space-y-6" x-data="{ showModal: false, currentImage: '' }">
                 @foreach($product->reviews as $review)
                     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
                         <div class="flex items-start justify-between mb-4">
@@ -436,7 +436,33 @@
                                     @endfor
                                 </div>
                             </div>
-                            <span class="text-sm text-gray-500 dark:text-gray-400">{{ $review->created_at->format('M d, Y') }}</span>
+                            <div class="flex items-center space-x-4">
+                                <span class="text-sm text-gray-500 dark:text-gray-400">{{ $review->created_at->format('M d, Y') }}</span>
+                                
+                                @auth
+                                    @if($review->buyer_id === auth()->id())
+                                        <div class="flex space-x-2">
+                                            <a href="{{ route('buyer.reviews.edit', $review->id) }}" 
+                                               class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                                </svg>
+                                            </a>
+                                            <form action="{{ route('buyer.reviews.destroy', $review->id) }}" method="POST" 
+                                                  onsubmit="return confirm('Are you sure you want to delete this review?');" 
+                                                  class="inline">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                    </svg>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    @endif
+                                @endauth
+                            </div>
                         </div>
                         
                         @if($review->comment)
@@ -444,14 +470,40 @@
                         @endif
 
                         @if($review->photos->isNotEmpty())
-                            <div class="grid grid-cols-4 gap-2">
+                            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
                                 @foreach($review->photos as $photo)
-                                    <img src="{{ asset('storage/' . $photo->photo_path) }}" alt="Review photo" class="w-full h-24 object-cover rounded-lg">
+                                    <img src="{{ asset('storage/' . $photo->photo_path) }}" 
+                                         alt="Review photo" 
+                                         @click="currentImage = '{{ asset('storage/' . $photo->photo_path) }}'; showModal = true"
+                                         class="w-full h-24 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity">
                                 @endforeach
                             </div>
                         @endif
                     </div>
                 @endforeach
+
+                <!-- Image Preview Modal -->
+                <div x-show="showModal"
+                     x-cloak
+                     class="fixed inset-0 z-50 overflow-y-auto"
+                     @click="showModal = false"
+                     @keydown.escape.window="showModal = false">
+                    <div class="fixed inset-0 bg-black bg-opacity-75 transition-opacity"></div>
+                    <div class="flex items-center justify-center min-h-screen p-4">
+                        <div class="relative max-w-5xl w-full" @click.stop>
+                            <button @click="showModal = false"
+                                    type="button"
+                                    class="absolute -top-10 right-0 text-white hover:text-gray-300 focus:outline-none z-10">
+                                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                            <img :src="currentImage" 
+                                 class="w-full h-auto rounded-lg shadow-2xl"
+                                 alt="Preview">
+                        </div>
+                    </div>
+                </div>
             </div>
         @else
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-12 text-center">

@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\View;
 use App\Models\Setting;
+use Illuminate\Support\Facades\URL;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -16,6 +17,10 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // Force HTTPS when behind ngrok proxy
+        if (request()->header('x-forwarded-proto') === 'https') {
+            URL::forceScheme('https');
+        }
         // Share settings with all views
         View::composer('*', function ($view) {
             $settings = cache()->remember('site_settings', 3600, function () {

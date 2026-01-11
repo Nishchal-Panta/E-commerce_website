@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Write a Review')
+@section('title', 'Edit Your Review')
 
 @section('content')
 <style>
@@ -9,13 +9,15 @@
 
 <div class="container mx-auto px-4 py-8 max-w-3xl" 
      x-data="{
-        rating: 0,
+        rating: {{ $review->rating }},
         hoverRating: 0,
-        comment: '',
+        comment: '{{ addslashes($review->comment ?? '') }}',
         photoPreviews: [],
         photoFiles: [],
         showModal: false,
         currentImage: '',
+        existingPhotos: {{ $review->photos->pluck('id')->toJson() }},
+        deletePhotos: [],
         
         setRating(value) {
             this.rating = value;
@@ -28,7 +30,7 @@
         
         handlePhotos(event) {
             const files = Array.from(event.target.files);
-            const remainingSlots = 5 - this.photoFiles.length;
+            const remainingSlots = 5 - this.photoFiles.length - (this.existingPhotos.length - this.deletePhotos.length);
             const filesToAdd = files.slice(0, remainingSlots);
             
             filesToAdd.forEach(file => {
@@ -58,6 +60,19 @@
             this.updateFileInput(fileInput);
         },
         
+        markExistingForDelete(photoId) {
+            const index = this.deletePhotos.indexOf(photoId);
+            if (index > -1) {
+                this.deletePhotos.splice(index, 1);
+            } else {
+                this.deletePhotos.push(photoId);
+            }
+        },
+        
+        isMarkedForDelete(photoId) {
+            return this.deletePhotos.includes(photoId);
+        },
+        
         updateFileInput(input) {
             const dt = new DataTransfer();
             this.photoFiles.forEach(file => {
@@ -77,21 +92,21 @@
         <ol class="flex items-center space-x-2 text-gray-600 dark:text-gray-400">
             <li><a href="{{ route('home') }}" class="hover:text-primary-600">Home</a></li>
             <li><span class="mx-2">/</span></li>
-            <li><a href="{{ route('buyer.orders.index') }}" class="hover:text-primary-600">Orders</a></li>
+            <li><a href="{{ route('products.show', $review->product_id) }}" class="hover:text-primary-600">{{ $review->product->name }}</a></li>
             <li><span class="mx-2">/</span></li>
-            <li class="text-gray-900 dark:text-white font-medium">Write a Review</li>
+            <li class="text-gray-900 dark:text-white font-medium">Edit Review</li>
         </ol>
     </nav>
 
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
-        <h1 class="text-3xl font-bold mb-6 text-gray-900 dark:text-white">Write a Review</h1>
+        <h1 class="text-3xl font-bold mb-6 text-gray-900 dark:text-white">Edit Your Review</h1>
 
         <!-- Product Info -->
         <div class="mb-8 pb-6 border-b border-gray-200 dark:border-gray-700">
             <div class="flex items-center space-x-4">
-                @if($product->images->count() > 0)
-                    <img src="{{ asset('storage/' . $product->images->first()->image_path) }}" 
-                         alt="{{ $product->name }}" 
+                @if($review->product->images->count() > 0)
+                    <img src="{{ asset('storage/' . $review->product->images->first()->image_path) }}" 
+                         alt="{{ $review->product->name }}" 
                          class="w-20 h-20 object-cover rounded-lg">
                 @else
                     <div class="w-20 h-20 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center">
@@ -101,16 +116,16 @@
                     </div>
                 @endif
                 <div>
-                    <h2 class="text-xl font-semibold text-gray-900 dark:text-white">{{ $product->name }}</h2>
-                    <p class="text-gray-600 dark:text-gray-400">${{ number_format($product->price, 2) }}</p>
+                    <h2 class="text-xl font-semibold text-gray-900 dark:text-white">{{ $review->product->name }}</h2>
+                    <p class="text-gray-600 dark:text-gray-400">${{ number_format($review->product->price, 2) }}</p>
                 </div>
             </div>
         </div>
 
         <!-- Review Form -->
-        <form action="{{ route('buyer.reviews.store') }}" method="POST" enctype="multipart/form-data">
+        <form action="{{ route('buyer.reviews.update', $review->id) }}" method="POST" enctype="multipart/form-data">
             @csrf
-            <input type="hidden" name="product_id" value="{{ $product->id }}">
+            @method('PUT')
 
             <!-- Rating -->
             <div class="mb-6">
@@ -158,10 +173,39 @@
                 </p>
             </div>
 
-            <!-- Photos -->
+            <!-- Existing Photos -->
+            @if($review->photos->count() > 0)
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Current Photos
+                    </label>
+                    <div class="flex flex-wrap gap-4">
+                        @foreach($review->photos as $photo)
+                            <div class="relative w-24 h-24 sm:w-32 sm:h-32" :class="{ 'opacity-50': isMarkedForDelete({{ $photo->id }}) }">
+                                <img src="{{ asset('storage/' . $photo->photo_path) }}" 
+                                     @click="previewImage('{{ asset('storage/' . $photo->photo_path) }}')"
+                                     class="w-full h-full object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity">
+                                <button type="button"
+                                        @click="markExistingForDelete({{ $photo->id }})"
+                                        class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 focus:outline-none z-10">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" x-show="!isMarkedForDelete({{ $photo->id }})">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" x-show="isMarkedForDelete({{ $photo->id }})" x-cloak>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                                    </svg>
+                                </button>
+                                <input type="hidden" :name="isMarkedForDelete({{ $photo->id }}) ? 'delete_photos[]' : ''" value="{{ $photo->id }}">
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+
+            <!-- Add New Photos -->
             <div class="mb-8">
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Add Photos (Optional)
+                    Add More Photos (Optional)
                 </label>
                 <div class="flex flex-wrap items-center gap-4">
                     <label class="flex items-center justify-center w-24 h-24 sm:w-32 sm:h-32 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:border-primary-500 dark:hover:border-primary-400 transition-colors">
@@ -204,7 +248,7 @@
 
             <!-- Submit Buttons -->
             <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-                <a href="{{ route('buyer.orders.index') }}" 
+                <a href="{{ route('products.show', $review->product_id) }}" 
                    class="px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-center">
                     Cancel
                 </a>
@@ -212,7 +256,7 @@
                         :disabled="rating === 0"
                         :class="rating === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-primary-700'"
                         class="px-8 py-3 bg-primary-600 text-white rounded-lg transition-colors font-medium">
-                    Submit Review
+                    Update Review
                 </button>
             </div>
         </form>
@@ -223,13 +267,9 @@
          x-cloak
          class="fixed inset-0 z-50 overflow-y-auto"
          @click="showModal = false">
-        <!-- Backdrop -->
         <div class="fixed inset-0 bg-black bg-opacity-75 transition-opacity"></div>
-        
-        <!-- Modal Content -->
         <div class="flex items-center justify-center min-h-screen p-4">
             <div class="relative max-w-5xl w-full" @click.stop>
-                <!-- Close Button -->
                 <button @click="showModal = false"
                         type="button"
                         class="absolute -top-10 right-0 text-white hover:text-gray-300 focus:outline-none z-10">
@@ -237,8 +277,6 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                     </svg>
                 </button>
-                
-                <!-- Image -->
                 <img :src="currentImage" 
                      class="w-full h-auto rounded-lg shadow-2xl"
                      alt="Preview">

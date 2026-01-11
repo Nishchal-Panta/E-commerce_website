@@ -33,7 +33,7 @@ class AdminDashboardController extends Controller
         $lowStockCount = Product::whereColumn('inventory_quantity', '<=', 'low_stock_threshold')->count();
 
         // Recent orders (more detailed)
-        $recentOrders = Order::with(['buyer', 'items.product'])
+        $recentOrders = Order::with(['buyer', 'orderItems.product'])
             ->orderBy('created_at', 'desc')
             ->take(10)
             ->get();

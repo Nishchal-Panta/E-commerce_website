@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Admin Panel')</title>
+    <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
+    <title><?php echo $__env->yieldContent('title', 'Admin Panel'); ?></title>
     
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <?php echo app('Illuminate\Foundation\Vite')(['resources/css/app.css', 'resources/js/app.js']); ?>
     
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -37,27 +37,27 @@
             </div>
             
             <nav class="mt-6 pb-6">
-                <a href="{{ route('admin.dashboard') }}" class="flex items-center px-4 sm:px-6 py-3 text-gray-300 hover:bg-gray-700 dark:hover:bg-gray-800 hover:text-white transition duration-150 {{ request()->routeIs('admin.dashboard') ? 'bg-gray-700 dark:bg-gray-800 text-white border-l-4 border-indigo-500' : '' }}">
+                <a href="<?php echo e(route('admin.dashboard')); ?>" class="flex items-center px-4 sm:px-6 py-3 text-gray-300 hover:bg-gray-700 dark:hover:bg-gray-800 hover:text-white transition duration-150 <?php echo e(request()->routeIs('admin.dashboard') ? 'bg-gray-700 dark:bg-gray-800 text-white border-l-4 border-indigo-500' : ''); ?>">
                     <i class="fas fa-tachometer-alt mr-3 w-5 text-center"></i>
                     <span>Dashboard</span>
                 </a>
-                <a href="{{ route('admin.orders.index') }}" class="flex items-center px-4 sm:px-6 py-3 text-gray-300 hover:bg-gray-700 dark:hover:bg-gray-800 hover:text-white transition duration-150 {{ request()->routeIs('admin.orders.*') ? 'bg-gray-700 dark:bg-gray-800 text-white border-l-4 border-indigo-500' : '' }}">
+                <a href="<?php echo e(route('admin.orders.index')); ?>" class="flex items-center px-4 sm:px-6 py-3 text-gray-300 hover:bg-gray-700 dark:hover:bg-gray-800 hover:text-white transition duration-150 <?php echo e(request()->routeIs('admin.orders.*') ? 'bg-gray-700 dark:bg-gray-800 text-white border-l-4 border-indigo-500' : ''); ?>">
                     <i class="fas fa-shopping-cart mr-3 w-5 text-center"></i>
                     <span>Orders</span>
                 </a>
-                <a href="{{ route('admin.inventory.index') }}" class="flex items-center px-4 sm:px-6 py-3 text-gray-300 hover:bg-gray-700 dark:hover:bg-gray-800 hover:text-white transition duration-150 {{ request()->routeIs('admin.inventory.*') ? 'bg-gray-700 dark:bg-gray-800 text-white border-l-4 border-indigo-500' : '' }}">
+                <a href="<?php echo e(route('admin.inventory.index')); ?>" class="flex items-center px-4 sm:px-6 py-3 text-gray-300 hover:bg-gray-700 dark:hover:bg-gray-800 hover:text-white transition duration-150 <?php echo e(request()->routeIs('admin.inventory.*') ? 'bg-gray-700 dark:bg-gray-800 text-white border-l-4 border-indigo-500' : ''); ?>">
                     <i class="fas fa-warehouse mr-3 w-5 text-center"></i>
                     <span>Inventory</span>
                 </a>
-                <a href="{{ route('admin.users.index') }}" class="flex items-center px-4 sm:px-6 py-3 text-gray-300 hover:bg-gray-700 dark:hover:bg-gray-800 hover:text-white transition duration-150 {{ request()->routeIs('admin.users.*') ? 'bg-gray-700 dark:bg-gray-800 text-white border-l-4 border-indigo-500' : '' }}">
+                <a href="<?php echo e(route('admin.users.index')); ?>" class="flex items-center px-4 sm:px-6 py-3 text-gray-300 hover:bg-gray-700 dark:hover:bg-gray-800 hover:text-white transition duration-150 <?php echo e(request()->routeIs('admin.users.*') ? 'bg-gray-700 dark:bg-gray-800 text-white border-l-4 border-indigo-500' : ''); ?>">
                     <i class="fas fa-users mr-3 w-5 text-center"></i>
                     <span>Users</span>
                 </a>
-                <a href="{{ route('admin.reports.index') }}" class="flex items-center px-4 sm:px-6 py-3 text-gray-300 hover:bg-gray-700 dark:hover:bg-gray-800 hover:text-white transition duration-150 {{ request()->routeIs('admin.reports.*') ? 'bg-gray-700 dark:bg-gray-800 text-white border-l-4 border-indigo-500' : '' }}">
+                <a href="<?php echo e(route('admin.reports.index')); ?>" class="flex items-center px-4 sm:px-6 py-3 text-gray-300 hover:bg-gray-700 dark:hover:bg-gray-800 hover:text-white transition duration-150 <?php echo e(request()->routeIs('admin.reports.*') ? 'bg-gray-700 dark:bg-gray-800 text-white border-l-4 border-indigo-500' : ''); ?>">
                     <i class="fas fa-bug mr-3 w-5 text-center"></i>
                     <span>Reports</span>
                 </a>
-                <a href="{{ route('admin.settings.edit') }}" class="flex items-center px-4 sm:px-6 py-3 text-gray-300 hover:bg-gray-700 dark:hover:bg-gray-800 hover:text-white transition duration-150 {{ request()->routeIs('admin.settings.*') ? 'bg-gray-700 dark:bg-gray-800 text-white border-l-4 border-indigo-500' : '' }}">
+                <a href="<?php echo e(route('admin.settings.edit')); ?>" class="flex items-center px-4 sm:px-6 py-3 text-gray-300 hover:bg-gray-700 dark:hover:bg-gray-800 hover:text-white transition duration-150 <?php echo e(request()->routeIs('admin.settings.*') ? 'bg-gray-700 dark:bg-gray-800 text-white border-l-4 border-indigo-500' : ''); ?>">
                     <i class="fas fa-cog mr-3 w-5 text-center"></i>
                     <span>Settings</span>
                 </a>
@@ -85,16 +85,17 @@
                 <!-- User Dropdown -->
                 <div x-data="{ userMenuOpen: false }" class="relative">
                     <button @click="userMenuOpen = !userMenuOpen" class="flex items-center space-x-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white focus:outline-none px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-200">
-                        @if(auth()->user()->profile_photo)
-                            <img src="{{ asset('storage/' . auth()->user()->profile_photo) }}" 
+                        <?php if(auth()->user()->profile_photo): ?>
+                            <img src="<?php echo e(asset('storage/' . auth()->user()->profile_photo)); ?>" 
                                  class="w-8 h-8 rounded-full object-cover border-2 border-gray-300 dark:border-gray-600" 
                                  alt="Profile">
-                        @else
+                        <?php else: ?>
                             <div class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-white font-semibold shadow-md">
-                                {{ strtoupper(substr(auth()->user()->username, 0, 1)) }}
+                                <?php echo e(strtoupper(substr(auth()->user()->username, 0, 1))); ?>
+
                             </div>
-                        @endif
-                        <span class="font-medium hidden sm:inline">{{ auth()->user()->username }}</span>
+                        <?php endif; ?>
+                        <span class="font-medium hidden sm:inline"><?php echo e(auth()->user()->username); ?></span>
                         <i class="fas fa-chevron-down text-sm"></i>
                     </button>
                     
@@ -111,12 +112,12 @@
                          style="display: none;">
                         
                         <div class="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
-                            <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ auth()->user()->username }}</p>
-                            <p class="text-xs text-gray-500 dark:text-gray-400">{{ auth()->user()->email }}</p>
+                            <p class="text-sm font-semibold text-gray-900 dark:text-white"><?php echo e(auth()->user()->username); ?></p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400"><?php echo e(auth()->user()->email); ?></p>
                         </div>
                         
-                        <form action="{{ route('admin.toggle-customer-view') }}" method="POST">
-                            @csrf
+                        <form action="<?php echo e(route('admin.toggle-customer-view')); ?>" method="POST">
+                            <?php echo csrf_field(); ?>
                             <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition duration-150 flex items-center">
                                 <i class="fas fa-user mr-3 w-4"></i>
                                 <span>View as Customer</span>
@@ -125,8 +126,8 @@
                         
                         <hr class="my-2 border-gray-200 dark:border-gray-700">
                         
-                        <form action="{{ route('logout') }}" method="POST">
-                            @csrf
+                        <form action="<?php echo e(route('logout')); ?>" method="POST">
+                            <?php echo csrf_field(); ?>
                             <button type="submit" class="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition duration-150 flex items-center">
                                 <i class="fas fa-sign-out-alt mr-3 w-4"></i>
                                 <span>Logout</span>
@@ -137,25 +138,25 @@
             </header>
             
             <!-- Flash Messages -->
-            @if(session('success'))
+            <?php if(session('success')): ?>
             <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 3000)" 
                 class="fixed top-20 right-4 bg-green-500 text-white px-4 sm:px-6 py-3 rounded-lg shadow-lg z-50 max-w-xs sm:max-w-sm">
                 <i class="fas fa-check-circle mr-2"></i> 
-                <span class="text-sm sm:text-base">{{ session('success') }}</span>
+                <span class="text-sm sm:text-base"><?php echo e(session('success')); ?></span>
             </div>
-            @endif
+            <?php endif; ?>
             
-            @if(session('error'))
+            <?php if(session('error')): ?>
             <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 3000)" 
                 class="fixed top-20 right-4 bg-red-500 text-white px-4 sm:px-6 py-3 rounded-lg shadow-lg z-50 max-w-xs sm:max-w-sm">
                 <i class="fas fa-exclamation-circle mr-2"></i> 
-                <span class="text-sm sm:text-base">{{ session('error') }}</span>
+                <span class="text-sm sm:text-base"><?php echo e(session('error')); ?></span>
             </div>
-            @endif
+            <?php endif; ?>
             
             <!-- Main Content Area -->
             <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 dark:bg-gray-900 p-4 sm:p-6 lg:p-8 transition-colors duration-300">
-                @yield('content')
+                <?php echo $__env->yieldContent('content'); ?>
             </main>
         </div>
     </div>
@@ -167,6 +168,7 @@
         }
     </script>
     
-    @stack('scripts')
+    <?php echo $__env->yieldPushContent('scripts'); ?>
 </body>
 </html>
+<?php /**PATH /app/resources/views/layouts/admin.blade.php ENDPATH**/ ?>

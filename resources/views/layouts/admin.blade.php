@@ -45,6 +45,10 @@
                     <i class="fas fa-shopping-cart mr-3 w-5 text-center"></i>
                     <span>Orders</span>
                 </a>
+                <a href="{{ route('admin.returns.index') }}" class="flex items-center px-4 sm:px-6 py-3 text-gray-300 hover:bg-gray-700 dark:hover:bg-gray-800 hover:text-white transition duration-150 {{ request()->routeIs('admin.returns.*') ? 'bg-gray-700 dark:bg-gray-800 text-white border-l-4 border-indigo-500' : '' }}">
+                    <i class="fas fa-undo mr-3 w-5 text-center"></i>
+                    <span>Returns</span>
+                </a>
                 <a href="{{ route('admin.inventory.index') }}" class="flex items-center px-4 sm:px-6 py-3 text-gray-300 hover:bg-gray-700 dark:hover:bg-gray-800 hover:text-white transition duration-150 {{ request()->routeIs('admin.inventory.*') ? 'bg-gray-700 dark:bg-gray-800 text-white border-l-4 border-indigo-500' : '' }}">
                     <i class="fas fa-warehouse mr-3 w-5 text-center"></i>
                     <span>Inventory</span>

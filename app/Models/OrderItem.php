@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\ProductReturn;
 
 class OrderItem extends Model
 {
@@ -33,6 +34,11 @@ class OrderItem extends Model
     public function product()
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function returns()
+    {
+        return $this->hasMany(ProductReturn::class);
     }
 
     // Helper methods

@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\AdminInventoryController;
 use App\Http\Controllers\Admin\AdminOrderController;
 use App\Http\Controllers\Admin\AdminProductController;
 use App\Http\Controllers\Admin\AdminReportController;
+use App\Http\Controllers\Admin\AdminReturnController;
 use App\Http\Controllers\Admin\AdminSettingController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Auth\LoginController;
@@ -16,6 +17,7 @@ use App\Http\Controllers\FaqController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ReturnController;
 use App\Http\Controllers\ReviewController;
 use Illuminate\Support\Facades\Route;
 
@@ -75,6 +77,12 @@ Route::middleware(['auth', 'buyer', 'check.blocked'])->group(function () {
     Route::put('/reviews/{id}', [ReviewController::class, 'update'])->name('buyer.reviews.update');
     Route::delete('/reviews/{id}', [ReviewController::class, 'destroy'])->name('buyer.reviews.destroy');
     
+    // Returns
+    Route::get('/returns', [ReturnController::class, 'index'])->name('buyer.returns.index');
+    Route::get('/returns/{id}', [ReturnController::class, 'show'])->name('buyer.returns.show');
+    Route::get('/order-items/{id}/return', [ReturnController::class, 'create'])->name('buyer.returns.create');
+    Route::post('/returns', [ReturnController::class, 'store'])->name('buyer.returns.store');
+    
     // Account
     Route::get('/account', [AccountController::class, 'edit'])->name('buyer.account.edit');
     Route::put('/account', [AccountController::class, 'update'])->name('buyer.account.update');
@@ -102,6 +110,17 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/{id}', [AdminOrderController::class, 'show'])->name('orders.show');
     Route::patch('/orders/{id}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.status');
+    
+    // Returns
+    Route::get('/returns', [AdminReturnController::class, 'index'])->name('returns.index');
+    Route::get('/returns/{id}', [AdminReturnController::class, 'show'])->name('returns.show');
+    Route::post('/returns/{id}/approve', [AdminReturnController::class, 'approve'])->name('returns.approve');
+    Route::post('/returns/{id}/reject', [AdminReturnController::class, 'reject'])->name('returns.reject');
+    Route::post('/returns/{id}/complete', [AdminReturnController::class, 'complete'])->name('returns.complete');
+    Route::get('/returns-reasons', [AdminReturnController::class, 'manageReasons'])->name('returns.reasons');
+    Route::post('/returns-reasons', [AdminReturnController::class, 'storeReason'])->name('returns.reasons.store');
+    Route::put('/returns-reasons/{id}', [AdminReturnController::class, 'updateReason'])->name('returns.reasons.update');
+    Route::delete('/returns-reasons/{id}', [AdminReturnController::class, 'destroyReason'])->name('returns.reasons.destroy');
     
     // Inventory
     Route::get('/inventory', [AdminInventoryController::class, 'index'])->name('inventory.index');

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Models\Return as ProductReturn;
 
 class User extends Authenticatable
 {
@@ -60,6 +61,11 @@ class User extends Authenticatable
     public function bugReports()
     {
         return $this->hasMany(BugReport::class);
+    }
+
+    public function returns()
+    {
+        return $this->hasMany(ProductReturn::class);
     }
 
     // Helper methods

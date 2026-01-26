@@ -101,20 +101,55 @@ class OrderController extends Controller
     public function index()
     {
         $orders = Order::where('buyer_id', auth()->id())
-            ->with('orderItems.product.images')
+            ->with([
+                'orderItems.product.images',
+                'orderItems.returns' => function($q) {
+                    $q->whereIn('status', ['pending', 'approved']);
+                }
+            ])
             ->orderBy('created_at', 'desc')
             ->paginate(10);
+        
+        // Eager load review status
+        $allProductIds = $orders->flatMap(function($order) {
+            return $order->orderItems->pluck('product_id');
+        })->unique();
+        
+        $reviewedProductIds = \App\Models\Review::where('buyer_id', auth()->id())
+            ->whereIn('product_id', $allProductIds)
+            ->pluck('product_id')
+            ->toArray();
 
-        return view('buyer.orders', compact('orders'));
+        return view('buyer.orders', compact('orders', 'reviewedProductIds'));
     }
 
     public function show($id)
     {
-        $order = Order::where('buyer_id', auth()->id())
-            ->with('orderItems.product.images')
-            ->findOrFail($id);
+        // Allow admins viewing as customer to see any order
+        // Regular buyers can only see their own orders
+        $query = Order::with([
+            'orderItems.product.images',
+            'orderItems.returns' => function($q) {
+                $q->whereIn('status', ['pending', 'approved']);
+            }
+        ]);
+        
+        if (auth()->user()->isAdmin() && session('view_as_customer', false)) {
+            // Admin in customer view can see any order
+            $order = $query->findOrFail($id);
+        } else {
+            // Regular buyers can only see their own orders
+            $order = $query->where('buyer_id', auth()->id())->findOrFail($id);
+        }
+        
+        // Eager load review status for all products in this order
+        $productIds = $order->orderItems->pluck('product_id')->unique();
+        $reviewedProductIds = \App\Models\Review::where('buyer_id', auth()->id())
+            ->whereIn('product_id', $productIds)
+            ->pluck('product_id')
+            ->toArray();
 
-        return view('buyer.order-detail', compact('order'));
+        return view('buyer.order-detail', compact('order', 'reviewedProductIds'));
     }
 
     public function cancel(Request $request, $id)
